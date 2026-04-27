@@ -1,0 +1,220 @@
+import { useState } from 'react'
+import { useNavigate, Link } from 'react-router-dom'
+import { Smartphone, Banknote, CreditCard, ChevronRight, Lock } from 'lucide-react'
+import { useCart } from '../context/CartContext.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
+import { useLang } from '../context/LangContext.jsx'
+import { createOrder } from '../api/orders.js'
+import { useToast } from '../components/Toast.jsx'
+
+const PAYMENT_METHODS = [
+  { id: 'momo', icon: Smartphone, labelKey: 'payment_momo', color: 'text-yellow-600' },
+  { id: 'cash', icon: Banknote, labelKey: 'payment_cash', color: 'text-green-600' },
+  { id: 'card', icon: CreditCard, labelKey: 'payment_card', color: 'text-blue-600' },
+]
+
+export default function Checkout() {
+  const { items, total, clearCart } = useCart()
+  const { user, profile, getToken } = useAuth()
+  const { t } = useLang()
+  const navigate = useNavigate()
+  const { addToast } = useToast()
+
+  const [form, setForm] = useState({
+    name: profile?.full_name || '',
+    email: user?.email || '',
+    phone: profile?.phone || '',
+    address: '',
+    city: 'Kigali',
+    payment: 'momo',
+  })
+  const [submitting, setSubmitting] = useState(false)
+  const [errors, setErrors] = useState({})
+
+  if (!user) {
+    return (
+      <div className="page-enter min-h-screen pt-28 flex items-center justify-center px-4">
+        <div className="text-center space-y-4 max-w-sm">
+          <div className="text-6xl">🔒</div>
+          <h2 className="font-heading font-bold text-2xl text-gray-800 dark:text-gray-200">{t('sign_in_checkout')}</h2>
+          <Link to="/login?next=/checkout" className="btn-primary inline-flex items-center gap-2">
+            {t('sign_in')} <ChevronRight className="w-5 h-5" />
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  const validate = () => {
+    const errs = {}
+    if (!form.name.trim()) errs.name = 'Required'
+    if (!form.email.trim()) errs.email = 'Required'
+    if (!form.phone.trim()) errs.phone = 'Required'
+    if (!form.address.trim()) errs.address = 'Required'
+    if (!form.city.trim()) errs.city = 'Required'
+    return errs
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    const errs = validate()
+    if (Object.keys(errs).length) { setErrors(errs); return }
+
+    setSubmitting(true)
+    try {
+      const token = getToken()
+      const cartItems = items.map(i => ({
+        id: i.id, name: i.name, price: i.price, qty: i.qty, image: i.image
+      }))
+
+      await createOrder({
+        items: cartItems,
+        total,
+        payment_method: form.payment,
+        phone: form.phone,
+        address: form.address,
+        city: form.city,
+        customer_name: form.name,
+        customer_email: form.email,
+      }, token)
+
+      clearCart()
+      navigate('/order-success')
+    } catch (err) {
+      addToast(t('error_load'), 'error')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const set = (field) => (e) => {
+    setForm(f => ({ ...f, [field]: e.target.value }))
+    setErrors(er => { const ne = { ...er }; delete ne[field]; return ne })
+  }
+
+  const inputClass = (field) =>
+    `w-full px-4 py-3 rounded-xl border ${errors[field] ? 'border-simba-red' : 'border-gray-200 dark:border-gray-700'} bg-white dark:bg-gray-800 focus:border-simba-red focus:outline-none text-gray-800 dark:text-gray-200 text-sm transition-all`
+
+  return (
+    <div className="page-enter min-h-screen pt-28 pb-28 md:pb-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+        <h1 className="font-heading font-bold text-2xl md:text-3xl text-gray-900 dark:text-white mb-8 flex items-center gap-2">
+          <Lock className="w-6 h-6 text-simba-red" /> {t('checkout_title')}
+        </h1>
+
+        <form onSubmit={handleSubmit}>
+          <div className="grid lg:grid-cols-3 gap-8">
+            {/* Form */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Delivery info */}
+              <div className="card p-6">
+                <h2 className="font-heading font-bold text-lg mb-4 text-gray-800 dark:text-gray-200">Delivery Information</h2>
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('form_name')} *</label>
+                    <input type="text" value={form.name} onChange={set('name')} className={inputClass('name')} placeholder="John Doe" />
+                    {errors.name && <p className="text-simba-red text-xs mt-1">{errors.name}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('form_email')} *</label>
+                    <input type="email" value={form.email} onChange={set('email')} className={inputClass('email')} placeholder="john@example.com" />
+                    {errors.email && <p className="text-simba-red text-xs mt-1">{errors.email}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('form_phone')} *</label>
+                    <input type="tel" value={form.phone} onChange={set('phone')} className={inputClass('phone')} placeholder="+250 700 000 000" />
+                    {errors.phone && <p className="text-simba-red text-xs mt-1">{errors.phone}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('form_city')} *</label>
+                    <input type="text" value={form.city} onChange={set('city')} className={inputClass('city')} placeholder="Kigali" />
+                    {errors.city && <p className="text-simba-red text-xs mt-1">{errors.city}</p>}
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('form_address')} *</label>
+                    <input type="text" value={form.address} onChange={set('address')} className={inputClass('address')} placeholder="KG 123 St, Kicukiro" />
+                    {errors.address && <p className="text-simba-red text-xs mt-1">{errors.address}</p>}
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment */}
+              <div className="card p-6">
+                <h2 className="font-heading font-bold text-lg mb-4 text-gray-800 dark:text-gray-200">{t('payment_title')}</h2>
+                <div className="space-y-3">
+                  {PAYMENT_METHODS.map(({ id, icon: Icon, labelKey, color }) => (
+                    <label key={id} className={`flex items-center gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${form.payment === id ? 'border-simba-red bg-red-50 dark:bg-red-900/10' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'}`}>
+                      <input
+                        type="radio"
+                        name="payment"
+                        value={id}
+                        checked={form.payment === id}
+                        onChange={() => setForm(f => ({ ...f, payment: id }))}
+                        className="w-4 h-4 accent-simba-red"
+                      />
+                      <Icon className={`w-6 h-6 ${color}`} />
+                      <div className="flex-1">
+                        <p className="font-semibold text-sm text-gray-800 dark:text-gray-200">{t(labelKey)}</p>
+                        {id === 'momo' && form.payment === 'momo' && (
+                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t('momo_hint')}</p>
+                        )}
+                      </div>
+                      {form.payment === id && (
+                        <div className="w-5 h-5 rounded-full bg-simba-red flex items-center justify-center">
+                          <div className="w-2 h-2 rounded-full bg-white" />
+                        </div>
+                      )}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Order Summary */}
+            <div>
+              <div className="card p-6 sticky top-24 space-y-4">
+                <h2 className="font-heading font-bold text-lg text-gray-800 dark:text-gray-200">{t('order_summary')}</h2>
+                <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+                  {items.map(item => (
+                    <div key={item.id} className="flex gap-3">
+                      <img src={item.image} alt={item.name} className="w-12 h-12 object-cover rounded-lg shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-700 dark:text-gray-300 line-clamp-2 leading-tight">{item.name}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">× {item.qty}</p>
+                      </div>
+                      <p className="text-xs font-bold text-gray-800 dark:text-gray-200 shrink-0">RWF {(item.price * item.qty).toLocaleString()}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="border-t border-gray-100 dark:border-gray-700 pt-4 space-y-2">
+                  <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                    <span>{t('cart_sub')}</span><span>RWF {total.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
+                    <span>Delivery</span><span className="text-green-600 font-medium">Free</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-lg border-t border-gray-100 dark:border-gray-700 pt-3">
+                    <span className="text-gray-800 dark:text-gray-200">Total</span>
+                    <span className="text-simba-red">RWF {total.toLocaleString()}</span>
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={submitting || items.length === 0}
+                  className="w-full btn-primary py-4 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                >
+                  {submitting ? (
+                    <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Processing...</>
+                  ) : (
+                    <><Lock className="w-5 h-5" /> {t('place_order')}</>
+                  )}
+                </button>
+                <p className="text-xs text-center text-gray-400">{items.length} {items.length === 1 ? 'item' : 'items'} · RWF {total.toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
