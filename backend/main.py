@@ -1,16 +1,24 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import products, orders, dashboard
-import os
-from dotenv import load_dotenv
-
-load_dotenv()
 
 app = FastAPI(title="Simba 2.0 API")
 
+frontend_url = os.environ.get("FRONTEND_URL", "*")
+if frontend_url == "*":
+    origins = ["*"]
+elif frontend_url.startswith("http://localhost"):
+    origins = [f"http://localhost:{p}" for p in range(5170, 5180)]
+else:
+    origins = [frontend_url]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[os.environ.get("FRONTEND_URL", "*")],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
