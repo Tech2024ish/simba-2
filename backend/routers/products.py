@@ -1,9 +1,29 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Header, HTTPException
 from supabase import create_client
+from pydantic import BaseModel
+from typing import Optional
 import os
 
 router = APIRouter()
 sb = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
+
+def require_market_rep(token: str):
+    try:
+        user = sb.auth.get_user(token).user
+    except Exception:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+    profile = sb.table("profiles").select("role").eq("id", user.id).single().execute()
+    if profile.data.get("role") != "market_rep":
+        raise HTTPException(status_code=403, detail="Market reps only")
+    return user
+
+class ProductBody(BaseModel):
+    name: str
+    price: float
+    category: str
+    unit: str = "Pcs"
+    image: Optional[str] = None
+    in_stock: bool = True
 
 @router.get("")
 def list_products(
@@ -47,3 +67,38 @@ def get_categories():
 def get_product(product_id: int):
     result = sb.table("products").select("*").eq("id", product_id).single().execute()
     return result.data
+
+@router.post("")
+def create_product(body: ProductBody, authorization: str = Header(...)):
+    token = authorization.replace("Bearer ", "")
+    require_market_rep(token)
+    result = sb.table("products").insert({
+        "name": body.name,
+        "price": body.price,
+        "category": body.category,
+        "unit": body.unit,
+        "image": body.image or "",
+        "in_stock": body.in_stock,
+    }).execute()
+    return result.data[0]
+
+@router.put("/{product_id}")
+def update_product(product_id: int, body: ProductBody, authorization: str = Header(...)):
+    token = authorization.replace("Bearer ", "")
+    require_market_rep(token)
+    result = sb.table("products").update({
+        "name": body.name,
+        "price": body.price,
+        "category": body.category,
+        "unit": body.unit,
+        "image": body.image or "",
+        "in_stock": body.in_stock,
+    }).eq("id", product_id).execute()
+    return result.data[0]
+
+@router.delete("/{product_id}")
+def delete_product(product_id: int, authorization: str = Header(...)):
+    token = authorization.replace("Bearer ", "")
+    require_market_rep(token)
+    sb.table("products").delete().eq("id", product_id).execute()
+    return {"ok": True}
