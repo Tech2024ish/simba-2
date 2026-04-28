@@ -8,16 +8,16 @@ import ProductCard from '../components/ProductCard.jsx'
 import SkeletonCard from '../components/SkeletonCard.jsx'
 
 const BRANCHES = [
-  { name: 'City Center (UTC)',  address: 'Union Trade Centre, KN 4 Ave, Kigali', query: 'Simba+Supermarket+Union+Trade+Centre+KN+4+Ave+Kigali+Rwanda' },
-  { name: 'KN 5 Road',          address: 'KN 5 Rd, Kigali',                       query: 'Simba+Supermarket+KN+5+Rd+Kigali+Rwanda' },
-  { name: 'KG 541 Branch',      address: 'KG 541 St, Kigali',                     query: 'Simba+Supermarket+KG+541+St+Kigali+Rwanda' },
-  { name: 'Remera',             address: 'Kigali',                                query: '24Q5%2BR2R+Kigali+Rwanda' },
-  { name: 'Kimironko',          address: 'KG 192 St, Kimironko, Kigali',           query: '24XF%2BXVV+KG+192+St+Kigali+Rwanda' },
-  { name: 'Nyamirambo',         address: 'Kigali',                                query: '23H4%2B26V+Kigali+Rwanda' },
-  { name: 'Gisozi',             address: 'Kigali',                                query: '24G3%2BMCV+Kigali+Rwanda' },
-  { name: 'KK 35 Branch',       address: 'KK 35 Ave, Kigali',                     query: 'Simba+Supermarket+KK+35+Ave+Kigali+Rwanda' },
-  { name: 'Kicukiro',           address: 'Kigali',                                query: '24J3%2BQ3+Kigali+Rwanda' },
-  { name: 'Gisenyi (Rubavu)',   address: 'Gisenyi, Rubavu',                       query: '8754%2BP7W+Gisenyi+Rwanda' },
+  { name: 'City Center (UTC)', address: 'Union Trade Centre, 1 KN 4 Ave, Kigali', query: '3336+MHV Kigali Rwanda' },
+  { name: 'KN 5 Road',         address: 'KN 5 Rd, Kigali',                        query: 'Simba Supermarket KN 5 Rd Kigali Rwanda' },
+  { name: 'KG 541 Branch',     address: 'KG 541 St, Kigali',                      query: 'Simba Supermarket KG 541 St Kigali Rwanda' },
+  { name: 'Remera',            address: '24Q5+R2R, Kigali',                       query: '24Q5+R2R Kigali Rwanda' },
+  { name: 'Kimironko',         address: '342F+3V5, Kimironko, Kigali',            query: '342F+3V5 Kimironko Kigali Rwanda' },
+  { name: 'Nyamirambo',        address: '23H4+26V, Kigali',                       query: '23H4+26V Kigali Rwanda' },
+  { name: 'Gisozi',            address: '24G3+MCV, Kigali',                       query: '24G3+MCV Kigali Rwanda' },
+  { name: 'KK 35 Branch',      address: 'KK 35 Ave, Kigali',                      query: 'Simba Supermarket KK 35 Ave Kigali Rwanda' },
+  { name: 'Kicukiro',          address: '24J3+Q3, Kigali',                        query: '24J3+Q3 Kigali Rwanda' },
+  { name: 'Gisenyi (Rubavu)',  address: '8754+P7W, Gisenyi',                      query: '8754+P7W Gisenyi Rwanda' },
 ]
 
 const CATEGORY_ICONS = {
@@ -209,7 +209,11 @@ export default function Home() {
           <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
           <span className="text-sm font-medium text-green-700 dark:text-green-400">{t('stores_open')}</span>
           <span className="text-gray-400 mx-1">·</span>
-          <span className="text-sm text-gray-600 dark:text-gray-300 truncate">{selectedBranch.address}</span>
+          <a
+            href={`https://maps.google.com/?q=${encodeURIComponent(selectedBranch.query)}`}
+            target="_blank" rel="noopener noreferrer"
+            className="text-sm text-simba-red dark:text-red-400 font-medium hover:underline truncate"
+          >{selectedBranch.address}</a>
         </div>
 
         {/* Embedded map */}
@@ -223,13 +227,13 @@ export default function Home() {
             loading="lazy"
             allowFullScreen
             referrerPolicy="no-referrer-when-downgrade"
-            src={`https://maps.google.com/maps?q=${selectedBranch.query}&output=embed&hl=en`}
+            src={`https://maps.google.com/maps?q=${encodeURIComponent(selectedBranch.query)}&output=embed&hl=en`}
           />
         </div>
 
         <div className="text-center mt-4">
           <a
-            href={`https://maps.google.com/?q=${selectedBranch.query}`}
+            href={`https://maps.google.com/?q=${encodeURIComponent(selectedBranch.query)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-simba-red font-semibold text-sm hover:underline"
