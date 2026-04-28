@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Smartphone, Banknote, CreditCard, ChevronRight, Lock } from 'lucide-react'
 import { useCart } from '../context/CartContext.jsx'
@@ -19,6 +19,7 @@ export default function Checkout() {
   const { t } = useLang()
   const navigate = useNavigate()
   const { addToast } = useToast()
+  const itemCount = useMemo(() => items.reduce((sum, item) => sum + item.qty, 0), [items])
 
   const [form, setForm] = useState({
     name: profile?.full_name || '',
@@ -31,11 +32,20 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState({})
 
+  useEffect(() => {
+    setForm((current) => ({
+      ...current,
+      name: current.name || profile?.full_name || '',
+      email: current.email || user?.email || '',
+      phone: current.phone || profile?.phone || '',
+    }))
+  }, [profile?.full_name, profile?.phone, user?.email])
+
   if (!user) {
     return (
       <div className="page-enter min-h-screen pt-28 flex items-center justify-center px-4">
         <div className="text-center space-y-4 max-w-sm">
-          <div className="text-6xl">🔒</div>
+          <Lock className="w-16 h-16 text-simba-red mx-auto" />
           <h2 className="font-heading font-bold text-2xl text-gray-800 dark:text-gray-200">{t('sign_in_checkout')}</h2>
           <Link to="/login?next=/checkout" className="btn-primary inline-flex items-center gap-2">
             {t('sign_in')} <ChevronRight className="w-5 h-5" />
@@ -58,38 +68,62 @@ export default function Checkout() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     const errs = validate()
-    if (Object.keys(errs).length) { setErrors(errs); return }
+    if (Object.keys(errs).length) {
+      setErrors(errs)
+      return
+    }
+    if (items.length === 0) {
+      addToast('Your cart is empty.', 'info')
+      navigate('/shop')
+      return
+    }
 
     setSubmitting(true)
     try {
       const token = getToken()
-      const cartItems = items.map(i => ({
-        id: i.id, name: i.name, price: i.price, qty: i.qty, image: i.image
+      if (!token) {
+        throw new Error('Missing session')
+      }
+
+      const cartItems = items.map((i) => ({
+        id: i.id,
+        name: i.name,
+        price: i.price,
+        qty: i.qty,
+        image: i.image,
       }))
 
       await createOrder({
         items: cartItems,
         total,
         payment_method: form.payment,
-        phone: form.phone,
-        address: form.address,
-        city: form.city,
-        customer_name: form.name,
-        customer_email: form.email,
+        phone: form.phone.trim(),
+        address: form.address.trim(),
+        city: form.city.trim(),
+        customer_name: form.name.trim(),
+        customer_email: form.email.trim(),
       }, token)
 
       clearCart()
+      addToast('Order placed successfully.', 'success')
       navigate('/order-success')
     } catch (err) {
-      addToast(t('error_load'), 'error')
+      const message = err?.code === 'ECONNABORTED'
+        ? 'Checkout timed out. Please try again.'
+        : 'We could not place your order right now. Please try again.'
+      addToast(message, 'error')
     } finally {
       setSubmitting(false)
     }
   }
 
   const set = (field) => (e) => {
-    setForm(f => ({ ...f, [field]: e.target.value }))
-    setErrors(er => { const ne = { ...er }; delete ne[field]; return ne })
+    setForm((f) => ({ ...f, [field]: e.target.value }))
+    setErrors((er) => {
+      const ne = { ...er }
+      delete ne[field]
+      return ne
+    })
   }
 
   const inputClass = (field) =>
@@ -102,11 +136,19 @@ export default function Checkout() {
           <Lock className="w-6 h-6 text-simba-red" /> {t('checkout_title')}
         </h1>
 
+        {items.length === 0 && (
+          <div className="card p-6 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h2 className="font-heading font-bold text-lg text-gray-900 dark:text-white">Your cart is empty</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Add a few products before placing an order.</p>
+            </div>
+            <Link to="/shop" className="btn-primary text-center">Continue shopping</Link>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
           <div className="grid lg:grid-cols-3 gap-8">
-            {/* Form */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Delivery info */}
               <div className="card p-6">
                 <h2 className="font-heading font-bold text-lg mb-4 text-gray-800 dark:text-gray-200">{t('delivery_info')}</h2>
                 <div className="grid sm:grid-cols-2 gap-4">
@@ -138,7 +180,6 @@ export default function Checkout() {
                 </div>
               </div>
 
-              {/* Payment */}
               <div className="card p-6">
                 <h2 className="font-heading font-bold text-lg mb-4 text-gray-800 dark:text-gray-200">{t('payment_title')}</h2>
                 <div className="space-y-3">
@@ -149,7 +190,7 @@ export default function Checkout() {
                         name="payment"
                         value={id}
                         checked={form.payment === id}
-                        onChange={() => setForm(f => ({ ...f, payment: id }))}
+                        onChange={() => setForm((f) => ({ ...f, payment: id }))}
                         className="w-4 h-4 accent-simba-red"
                       />
                       <Icon className={`w-6 h-6 ${color}`} />
@@ -170,17 +211,16 @@ export default function Checkout() {
               </div>
             </div>
 
-            {/* Order Summary */}
             <div>
               <div className="card p-6 sticky top-24 space-y-4">
                 <h2 className="font-heading font-bold text-lg text-gray-800 dark:text-gray-200">{t('order_summary')}</h2>
                 <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-                  {items.map(item => (
+                  {items.map((item) => (
                     <div key={item.id} className="flex gap-3">
                       <img src={item.image} alt={item.name} className="w-12 h-12 object-cover rounded-lg shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-medium text-gray-700 dark:text-gray-300 line-clamp-2 leading-tight">{item.name}</p>
-                        <p className="text-xs text-gray-400 mt-0.5">× {item.qty}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">x {item.qty}</p>
                       </div>
                       <p className="text-xs font-bold text-gray-800 dark:text-gray-200 shrink-0">RWF {(item.price * item.qty).toLocaleString()}</p>
                     </div>
@@ -209,7 +249,7 @@ export default function Checkout() {
                     <><Lock className="w-5 h-5" /> {t('place_order')}</>
                   )}
                 </button>
-                <p className="text-xs text-center text-gray-400">{items.length} {items.length === 1 ? 'item' : 'items'} · RWF {total.toLocaleString()}</p>
+                <p className="text-xs text-center text-gray-400">{itemCount} {itemCount === 1 ? 'item' : 'items'} · RWF {total.toLocaleString()}</p>
               </div>
             </div>
           </div>

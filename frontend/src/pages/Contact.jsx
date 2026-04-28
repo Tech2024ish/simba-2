@@ -2,10 +2,23 @@ import { useEffect, useState } from 'react'
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle } from 'lucide-react'
 import { useLang } from '../context/LangContext.jsx'
 import { supabase, useAuth } from '../context/AuthContext.jsx'
+import { useToast } from '../components/Toast.jsx'
+
+const REQUEST_TIMEOUT_MS = 15000
+
+function withTimeout(promise, ms, message) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(message)), ms)
+    }),
+  ])
+}
 
 export default function Contact() {
   const { t } = useLang()
   const { user, profile } = useAuth()
+  const { addToast } = useToast()
 
   const [form, setForm] = useState({
     name: profile?.full_name || '',
@@ -34,22 +47,33 @@ export default function Contact() {
     setSending(true)
     setError('')
 
-    const { error: err } = await supabase.from('contact_messages').insert({
-      name: form.name.trim(),
-      email: form.email.trim(),
-      subject: form.subject.trim(),
-      message: form.message.trim(),
-      user_id: user?.id || null,
-    })
+    try {
+      const { error: err } = await withTimeout(
+        supabase.from('contact_messages').insert({
+          name: form.name.trim(),
+          email: form.email.trim(),
+          subject: form.subject.trim(),
+          message: form.message.trim(),
+          user_id: user?.id || null,
+        }),
+        REQUEST_TIMEOUT_MS,
+        'Request timed out'
+      )
 
-    if (err) {
-      setError(t('error_load'))
-    } else {
+      if (err) throw err
+
       setSent(true)
       setForm({ name: '', email: '', subject: '', message: '' })
+      addToast(t('contact_sent'), 'success')
+    } catch (err) {
+      const message = err?.message === 'Request timed out'
+        ? 'Message could not be sent in time. Please try again.'
+        : 'We could not send your message right now. Please try again.'
+      setError(message)
+      addToast(message, 'error')
+    } finally {
+      setSending(false)
     }
-
-    setSending(false)
   }
 
   const inputClass = 'w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:border-simba-red focus:outline-none text-sm text-gray-800 dark:text-gray-200 transition-colors'
@@ -95,7 +119,7 @@ export default function Contact() {
                 <CheckCircle className="w-16 h-16 text-green-500" />
                 <h3 className="font-heading font-bold text-xl text-gray-900 dark:text-white">{t('contact_sent')}</h3>
                 <button onClick={() => setSent(false)} className="text-simba-red text-sm font-semibold hover:underline">
-                  {t('contact_send')} {'>'}
+                  Send another message {'>'}
                 </button>
               </div>
             ) : (
