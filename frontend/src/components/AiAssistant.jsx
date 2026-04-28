@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { MessageCircle, X, Send, Bot, User, Loader2 } from 'lucide-react'
+import { X, Send, Bot, User, Loader2 } from 'lucide-react'
 import { useLang } from '../context/LangContext.jsx'
 
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY
@@ -108,12 +108,15 @@ export default function AiAssistant() {
       {/* Floating button */}
       <button
         onClick={() => setOpen(o => !o)}
-        className="fixed bottom-24 md:bottom-6 right-4 z-50 w-14 h-14 bg-simba-red text-white rounded-full shadow-lg shadow-red-900/40 flex items-center justify-center hover:bg-red-700 hover:scale-110 transition-all duration-200"
-        aria-label="Open AI Assistant"
+        className="fixed bottom-24 md:bottom-6 right-4 z-50 flex items-center gap-2 bg-simba-red text-white pl-4 pr-5 h-12 rounded-full shadow-lg shadow-red-900/40 hover:bg-red-700 hover:scale-105 transition-all duration-200"
+        aria-label="Open Simba AI"
       >
-        {open ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+        {open ? <X className="w-5 h-5" /> : <span className="text-lg">🦁</span>}
+        <span className="font-bold text-sm tracking-wide">
+          {open ? 'Close' : 'Simba AI'}
+        </span>
         {!open && (
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
+          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-white" />
         )}
       </button>
 
