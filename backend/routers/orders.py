@@ -9,8 +9,11 @@ sb = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"
 
 def get_user(token: str):
     try:
-        user = sb.auth.get_user(token)
-        return user.user
+        auth_response = sb.auth.get_user(token)
+        user = auth_response.user
+        if not user:
+            raise HTTPException(status_code=401, detail="Unauthorized")
+        return user
     except Exception:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
@@ -28,18 +31,29 @@ class OrderCreate(BaseModel):
 def create_order(order: OrderCreate, authorization: str = Header(...)):
     token = authorization.replace("Bearer ", "")
     user = get_user(token)
-    result = sb.table("orders").insert({
-        "user_id": user.id,
-        "customer_name": order.customer_name,
-        "customer_email": order.customer_email,
-        "items": order.items,
-        "total": order.total,
-        "payment_method": order.payment_method,
-        "phone": order.phone,
-        "address": order.address,
-        "city": order.city,
-        "status": "pending"
-    }).execute()
+    if not order.items:
+        raise HTTPException(status_code=400, detail="Order must include at least one item")
+    if order.total <= 0:
+        raise HTTPException(status_code=400, detail="Order total must be greater than zero")
+
+    try:
+        result = sb.table("orders").insert({
+            "user_id": user.id,
+            "customer_name": order.customer_name.strip(),
+            "customer_email": order.customer_email.strip(),
+            "items": order.items,
+            "total": order.total,
+            "payment_method": order.payment_method.strip(),
+            "phone": order.phone.strip(),
+            "address": order.address.strip(),
+            "city": order.city.strip(),
+            "status": "pending"
+        }).execute()
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to create order: {exc}")
+
+    if not result.data:
+        raise HTTPException(status_code=500, detail="Order could not be created")
     return result.data[0]
 
 @router.get("")

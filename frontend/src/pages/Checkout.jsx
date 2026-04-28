@@ -110,7 +110,7 @@ export default function Checkout() {
     } catch (err) {
       const message = err?.code === 'ECONNABORTED'
         ? 'Checkout timed out. Please try again.'
-        : 'We could not place your order right now. Please try again.'
+        : err?.response?.data?.detail || 'We could not place your order right now. Please try again.'
       addToast(message, 'error')
     } finally {
       setSubmitting(false)
