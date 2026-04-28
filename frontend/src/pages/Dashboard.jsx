@@ -103,11 +103,11 @@ export default function Dashboard() {
       if (editingProduct) {
         const updated = await updateProduct(editingProduct.id, payload, token)
         setProducts(prev => prev.map(p => p.id === editingProduct.id ? updated : p))
-        addToast('Product updated!', 'success')
+        addToast(t('product_updated'), 'success')
       } else {
         const created = await createProduct(payload, token)
         setProducts(prev => [created, ...prev])
-        addToast('Product added!', 'success')
+        addToast(t('product_added'), 'success')
       }
       setShowModal(false)
     } catch {
@@ -123,7 +123,7 @@ export default function Dashboard() {
     try {
       await deleteProduct(id, token)
       setProducts(prev => prev.filter(p => p.id !== id))
-      addToast('Product deleted.', 'success')
+      addToast(t('product_deleted'), 'success')
     } catch {
       addToast(t('error_load'), 'error')
     } finally {
@@ -316,7 +316,7 @@ export default function Dashboard() {
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input type="text" value={prodSearch} onChange={e => setProdSearch(e.target.value)}
-                    placeholder="Search products..."
+                    placeholder={t('search_products')}
                     className="w-full pl-9 pr-4 py-2.5 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-simba-red focus:outline-none text-sm text-gray-800 dark:text-gray-200" />
                 </div>
                 <button onClick={openAdd}
@@ -406,7 +406,7 @@ export default function Dashboard() {
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md">
             <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-700">
               <h2 className="font-heading font-bold text-lg text-gray-900 dark:text-white">
-                {editingProduct ? 'Edit Product' : 'Add New Product'}
+                {editingProduct ? t('edit_product') : t('add_product')}
               </h2>
               <button onClick={() => setShowModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                 <X className="w-5 h-5 text-gray-500" />
@@ -459,7 +459,7 @@ export default function Dashboard() {
                 <button type="submit" disabled={saving}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-simba-red text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-50">
                   {saving ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
-                  {editingProduct ? 'Save Changes' : 'Add Product'}
+                  {editingProduct ? t('save_changes') : t('add_product')}
                 </button>
               </div>
             </form>
@@ -485,7 +485,7 @@ export default function Dashboard() {
               </button>
               <button onClick={() => handleDelete(confirmDelete.id)} disabled={deletingId === confirmDelete.id}
                 className="flex-1 px-4 py-2.5 bg-simba-red text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-50">
-                {deletingId === confirmDelete.id ? 'Deleting...' : 'Delete'}
+                {deletingId === confirmDelete.id ? t('deleting') : t('delete')}
               </button>
             </div>
           </div>

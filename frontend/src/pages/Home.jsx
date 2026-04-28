@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight, Truck, Shield, Clock, Star, MapPin, ChevronDown } from 'lucide-react'
+import { ArrowRight, Truck, Shield, Clock, Star, MapPin, ChevronDown, Send, Phone, Mail, MessageSquare } from 'lucide-react'
 
 import { useLang } from '../context/LangContext.jsx'
+import { supabase } from '../context/AuthContext.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import { getProducts, getCategories } from '../api/products.js'
 import ProductCard from '../components/ProductCard.jsx'
 import SkeletonCard from '../components/SkeletonCard.jsx'
@@ -29,11 +31,18 @@ const CATEGORY_ICONS = {
 
 export default function Home() {
   const { t } = useLang()
+  const { user, profile } = useAuth()
   const navigate = useNavigate()
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedBranch, setSelectedBranch] = useState(BRANCHES[0])
+
+  // Reviews state
+  const [reviews, setReviews] = useState([])
+  const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '' })
+  const [submittingReview, setSubmittingReview] = useState(false)
+  const [reviewMsg, setReviewMsg] = useState('')
 
   useEffect(() => {
     Promise.all([
@@ -43,7 +52,30 @@ export default function Home() {
       setProducts(pd.products)
       setCategories(cats)
     }).finally(() => setLoading(false))
+
+    supabase.from('reviews').select('*').order('created_at', { ascending: false }).limit(6)
+      .then(({ data }) => { if (data) setReviews(data) })
   }, [])
+
+  const submitReview = async (e) => {
+    e.preventDefault()
+    if (!reviewForm.comment.trim()) return
+    setSubmittingReview(true)
+    const { error } = await supabase.from('reviews').insert({
+      user_id: user.id,
+      user_name: profile?.full_name || user.email.split('@')[0],
+      rating: reviewForm.rating,
+      comment: reviewForm.comment.trim(),
+    })
+    if (!error) {
+      setReviewMsg(t('review_submitted'))
+      setReviewForm({ rating: 5, comment: '' })
+      const { data } = await supabase.from('reviews').select('*').order('created_at', { ascending: false }).limit(6)
+      if (data) setReviews(data)
+    }
+    setSubmittingReview(false)
+    setTimeout(() => setReviewMsg(''), 3000)
+  }
 
   return (
     <div className="page-enter min-h-screen">
@@ -240,6 +272,133 @@ export default function Home() {
           >
             <MapPin className="w-4 h-4" /> {t('stores_directions')}
           </a>
+        </div>
+      </section>
+
+      {/* ── ABOUT ── */}
+      <section className="bg-white dark:bg-gray-900 py-14">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div>
+              <span className="text-sm font-bold text-simba-orange uppercase tracking-widest">{t('about_sub')}</span>
+              <h2 className="font-heading font-bold text-3xl md:text-4xl text-gray-900 dark:text-white mt-2 mb-4">{t('about_title')}</h2>
+              <p className="text-gray-600 dark:text-gray-400 leading-relaxed mb-6">{t('about_desc')}</p>
+              <div className="bg-simba-red/5 dark:bg-simba-red/10 border border-simba-red/20 rounded-2xl p-5">
+                <h3 className="font-heading font-bold text-simba-red mb-2">{t('about_mission')}</h3>
+                <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{t('about_mission_desc')}</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {[
+                { value: '10+', label: t('our_branches') },
+                { value: '552', label: t('dash_products') },
+                { value: '1989', label: t('hero_stat3').replace('Kigali, ','') + ' est.' },
+                { value: '24/7', label: t('trust_returns_sub') },
+              ].map(stat => (
+                <div key={stat.label} className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6 text-center">
+                  <p className="font-heading font-bold text-3xl text-simba-red mb-1">{stat.value}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">{stat.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── REVIEWS ── */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
+        <div className="text-center mb-10">
+          <h2 className="font-heading font-bold text-2xl md:text-3xl text-gray-900 dark:text-white mb-2">{t('reviews_title')}</h2>
+          <p className="text-gray-500 dark:text-gray-400">{t('reviews_sub')}</p>
+        </div>
+
+        {/* Review cards */}
+        {reviews.length === 0 ? (
+          <p className="text-center text-gray-400 mb-8">{t('reviews_empty')}</p>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+            {reviews.map(r => (
+              <div key={r.id} className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm">
+                <div className="flex items-center gap-1 mb-3">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className={`w-4 h-4 ${i < r.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 dark:text-gray-700'}`} />
+                  ))}
+                </div>
+                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">"{r.comment}"</p>
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-simba-red flex items-center justify-center text-white text-xs font-bold">
+                    {r.user_name?.[0]?.toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{r.user_name}</p>
+                    <p className="text-xs text-gray-400">{new Date(r.created_at).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Write review form */}
+        <div className="max-w-lg mx-auto bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm">
+          <h3 className="font-heading font-bold text-lg text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-simba-red" /> {t('write_review')}
+          </h3>
+          {!user ? (
+            <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+              <Link to="/login" className="text-simba-red font-semibold hover:underline">{t('sign_in')}</Link> {t('sign_in_checkout').replace('Please sign in to checkout','to leave a review')}
+            </p>
+          ) : (
+            <form onSubmit={submitReview} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('your_rating')}</label>
+                <div className="flex gap-1">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <button key={i} type="button" onClick={() => setReviewForm(f => ({ ...f, rating: i + 1 }))}>
+                      <Star className={`w-7 h-7 transition-colors ${i < reviewForm.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-600'}`} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('your_comment')}</label>
+                <textarea rows={3} required value={reviewForm.comment}
+                  onChange={e => setReviewForm(f => ({ ...f, comment: e.target.value }))}
+                  placeholder={t('review_placeholder')}
+                  className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-simba-red focus:outline-none text-sm text-gray-800 dark:text-gray-200 resize-none" />
+              </div>
+              {reviewMsg && <p className="text-sm text-green-600 font-medium">{reviewMsg}</p>}
+              <button type="submit" disabled={submittingReview}
+                className="w-full flex items-center justify-center gap-2 bg-simba-red text-white rounded-full py-3 font-bold text-sm hover:bg-red-700 transition-colors disabled:opacity-50">
+                <Send className="w-4 h-4" /> {submittingReview ? '...' : t('submit_review')}
+              </button>
+            </form>
+          )}
+        </div>
+      </section>
+
+      {/* ── CONTACT ── */}
+      <section className="bg-simba-navy dark:bg-gray-900 py-14">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+          <div className="text-center mb-10">
+            <h2 className="font-heading font-bold text-2xl md:text-3xl text-white mb-2">{t('contact_title')}</h2>
+            <p className="text-white/60">{t('contact_hours')}</p>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
+            {[
+              { icon: MapPin,  label: 'Kigali, Rwanda', sub: t('stores_sub') },
+              { icon: Phone,   label: '+250 700 000 000', sub: t('contact_hours') },
+              { icon: Mail,    label: 'info@simbasupermarket.rw', sub: t('contact_title') },
+            ].map(({ icon: Icon, label, sub }) => (
+              <div key={label} className="flex flex-col items-center text-center gap-3 bg-white/5 rounded-2xl p-6">
+                <div className="w-12 h-12 rounded-full bg-simba-orange/20 flex items-center justify-center">
+                  <Icon className="w-6 h-6 text-simba-orange" />
+                </div>
+                <p className="font-semibold text-white text-sm">{label}</p>
+                <p className="text-white/50 text-xs">{sub}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

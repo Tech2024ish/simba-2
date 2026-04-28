@@ -108,7 +108,7 @@ export default function Checkout() {
             <div className="lg:col-span-2 space-y-6">
               {/* Delivery info */}
               <div className="card p-6">
-                <h2 className="font-heading font-bold text-lg mb-4 text-gray-800 dark:text-gray-200">Delivery Information</h2>
+                <h2 className="font-heading font-bold text-lg mb-4 text-gray-800 dark:text-gray-200">{t('delivery_info')}</h2>
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('form_name')} *</label>
@@ -191,10 +191,10 @@ export default function Checkout() {
                     <span>{t('cart_sub')}</span><span>RWF {total.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                    <span>Delivery</span><span className="text-green-600 font-medium">Free</span>
+                    <span>{t('trust_fast')}</span><span className="text-green-600 font-medium">{t('delivery_free')}</span>
                   </div>
                   <div className="flex justify-between font-bold text-lg border-t border-gray-100 dark:border-gray-700 pt-3">
-                    <span className="text-gray-800 dark:text-gray-200">Total</span>
+                    <span className="text-gray-800 dark:text-gray-200">{t('order_total_label')}</span>
                     <span className="text-simba-red">RWF {total.toLocaleString()}</span>
                   </div>
                 </div>
@@ -204,7 +204,7 @@ export default function Checkout() {
                   className="w-full btn-primary py-4 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   {submitting ? (
-                    <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Processing...</>
+                    <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('processing')}</>
                   ) : (
                     <><Lock className="w-5 h-5" /> {t('place_order')}</>
                   )}

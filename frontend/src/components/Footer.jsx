@@ -47,7 +47,7 @@ export default function Footer() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-heading font-bold mb-4 text-simba-orange">Quick Links</h4>
+            <h4 className="font-heading font-bold mb-4 text-simba-orange">{t('quick_links')}</h4>
             <ul className="space-y-2.5">
               {[
                 { label: t('nav_home'), to: '/' },
@@ -66,7 +66,7 @@ export default function Footer() {
 
           {/* Categories */}
           <div>
-            <h4 className="font-heading font-bold mb-4 text-simba-orange">Categories</h4>
+            <h4 className="font-heading font-bold mb-4 text-simba-orange">{t('cat_title')}</h4>
             <ul className="space-y-2.5">
               {['Food Products', 'Alcoholic Drinks', 'Cosmetics & Personal Care', 'Baby Products', 'Kitchenware & Electronics'].map(cat => (
                 <li key={cat}>
@@ -80,7 +80,7 @@ export default function Footer() {
 
           {/* Branches */}
           <div>
-            <h4 className="font-heading font-bold mb-4 text-simba-orange">Our Branches</h4>
+            <h4 className="font-heading font-bold mb-4 text-simba-orange">{t('our_branches')}</h4>
             <ul className="space-y-2">
               {['City Center (UTC)','KN 5 Road','Kimironko','Nyamirambo','Remera','Gisenyi'].map(b => (
                 <li key={b} className="flex items-center gap-2 text-white/60 text-sm">
@@ -88,7 +88,7 @@ export default function Footer() {
                   {b}
                 </li>
               ))}
-              <li className="text-white/40 text-xs mt-1 pl-5">+ 4 more locations</li>
+              <li className="text-white/40 text-xs mt-1 pl-5">+ 4 {t('more_locations')}</li>
             </ul>
             <div className="mt-4 space-y-2">
               <div className="flex items-center gap-2 text-white/60 text-sm">
