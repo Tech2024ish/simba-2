@@ -15,6 +15,8 @@ TEST_USERS = [
         "full_name": "Test Buyer",
         "role": "buyer",
         "phone": "+250700000001",
+        "address": "KN 343 St",
+        "city": "Kigali",
     },
     {
         "email": "admin@test.com",
@@ -22,6 +24,8 @@ TEST_USERS = [
         "full_name": "Admin User",
         "role": "market_rep",
         "phone": "+250700000002",
+        "address": "KN 5 Rd",
+        "city": "Kigali",
     },
 ]
 
@@ -34,12 +38,14 @@ def find_user_by_email(email: str):
     return None
 
 
-def sync_profile(user_id: str, full_name: str, role: str, phone: str):
+def sync_profile(user_id: str, full_name: str, role: str, phone: str, address: str, city: str):
     sb.table("profiles").upsert({
         "id": user_id,
         "full_name": full_name,
         "role": role,
         "phone": phone,
+        "address": address,
+        "city": city,
     }).execute()
 
 
@@ -51,6 +57,8 @@ for test_user in TEST_USERS:
             "full_name": test_user["full_name"],
             "role": test_user["role"],
             "phone": test_user["phone"],
+            "address": test_user["address"],
+            "city": test_user["city"],
         },
         "email_confirm": True,
     }
@@ -71,8 +79,13 @@ for test_user in TEST_USERS:
             test_user["full_name"],
             test_user["role"],
             test_user["phone"],
+            test_user["address"],
+            test_user["city"],
         )
-        print(f"{test_user['email']} {action} with phone {test_user['phone']}")
+        print(
+            f"{test_user['email']} {action} with phone {test_user['phone']} "
+            f"and address {test_user['address']}, {test_user['city']}"
+        )
     except Exception as e:
         print(f"{test_user['email']} error: {e}")
 print("Done!")

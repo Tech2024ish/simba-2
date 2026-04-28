@@ -2,17 +2,21 @@
 
 -- 1. Ensure phone column exists
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS phone text;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS address text;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS city text;
 
 -- 2. Recreate the trigger function with correct search_path (required by Supabase)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.profiles (id, full_name, role, phone)
+  INSERT INTO public.profiles (id, full_name, role, phone, address, city)
   VALUES (
     new.id,
     coalesce(new.raw_user_meta_data->>'full_name', ''),
     coalesce(new.raw_user_meta_data->>'role', 'buyer'),
-    coalesce(new.raw_user_meta_data->>'phone', '')
+    coalesce(new.raw_user_meta_data->>'phone', ''),
+    coalesce(new.raw_user_meta_data->>'address', ''),
+    coalesce(new.raw_user_meta_data->>'city', 'Kigali')
   )
   ON CONFLICT (id) DO NOTHING;
   RETURN new;

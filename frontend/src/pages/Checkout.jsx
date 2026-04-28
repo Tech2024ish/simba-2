@@ -34,8 +34,8 @@ export default function Checkout() {
     name: profile?.full_name || '',
     email: user?.email || '',
     phone: profile?.phone || '',
-    address: '',
-    city: 'Kigali',
+    address: profile?.address || '',
+    city: profile?.city || 'Kigali',
     payment: 'momo',
   })
   const [submitting, setSubmitting] = useState(false)
@@ -73,8 +73,10 @@ export default function Checkout() {
       name: current.name || profile?.full_name || '',
       email: current.email || user?.email || '',
       phone: current.phone || profile?.phone || '',
+      address: current.address || profile?.address || '',
+      city: current.city || profile?.city || 'Kigali',
     }))
-  }, [profile?.full_name, profile?.phone, user?.email])
+  }, [profile?.address, profile?.city, profile?.full_name, profile?.phone, user?.email])
 
   if (!user) {
     return (

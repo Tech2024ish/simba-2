@@ -18,6 +18,8 @@ create table if not exists profiles (
   full_name text,
   role text default 'buyer' check (role in ('buyer', 'market_rep')),
   phone text,
+  address text,
+  city text,
   created_at timestamptz default now()
 );
 
@@ -60,12 +62,14 @@ create policy "Market reps update orders" on orders for update
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, full_name, role, phone)
+  insert into public.profiles (id, full_name, role, phone, address, city)
   values (
     new.id,
     coalesce(new.raw_user_meta_data->>'full_name', ''),
     coalesce(new.raw_user_meta_data->>'role', 'buyer'),
-    coalesce(new.raw_user_meta_data->>'phone', '')
+    coalesce(new.raw_user_meta_data->>'phone', ''),
+    coalesce(new.raw_user_meta_data->>'address', ''),
+    coalesce(new.raw_user_meta_data->>'city', 'Kigali')
   )
   on conflict (id) do nothing;
   return new;
