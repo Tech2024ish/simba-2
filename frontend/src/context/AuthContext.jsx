@@ -98,8 +98,7 @@ export function AuthProvider({ children }) {
   }, [])
 
   const logout = useCallback(async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
+    try { await supabase.auth.signOut({ scope: 'local' }) } catch (_) {}
     setUser(null)
     setProfile(null)
     setSession(null)

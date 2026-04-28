@@ -20,6 +20,16 @@ const SocialIcons = {
   ),
 }
 
+const FOOTER_CATEGORIES = [
+  'Food Products', 'Alcoholic Drinks', 'Cosmetics & Personal Care',
+  'Baby Products', 'Kitchenware & Electronics',
+]
+
+const FOOTER_BRANCHES = [
+  'City Center (UTC)', 'KN 5 Road', 'Kimironko',
+  'Nyamirambo', 'Remera', 'Gisenyi',
+]
+
 export default function Footer() {
   const { t } = useLang()
 
@@ -27,15 +37,14 @@ export default function Footer() {
     <footer className="bg-simba-navy dark:bg-gray-950 text-white mt-20 pb-20 md:pb-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+
           {/* Brand */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <span className="text-2xl">🦁</span>
               <span className="font-heading font-bold text-xl text-simba-orange">Simba</span>
             </div>
-            <p className="text-white/60 text-sm leading-relaxed">
-              Rwanda's #1 Online Supermarket. Fresh groceries delivered fast to your door in Kigali.
-            </p>
+            <p className="text-white/60 text-sm leading-relaxed">{t('about_sub')}. {t('hero_sub')}</p>
             <div className="flex gap-3">
               {[SocialIcons.Facebook, SocialIcons.X, SocialIcons.Instagram].map((Icon, i) => (
                 <a key={i} href="#" className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center hover:bg-simba-orange transition-colors">
@@ -50,10 +59,11 @@ export default function Footer() {
             <h4 className="font-heading font-bold mb-4 text-simba-orange">{t('quick_links')}</h4>
             <ul className="space-y-2.5">
               {[
-                { label: t('nav_home'), to: '/' },
-                { label: t('nav_shop'), to: '/shop' },
-                { label: t('nav_cart'), to: '/cart' },
-                { label: t('nav_login'), to: '/login' },
+                { label: t('nav_home'),     to: '/' },
+                { label: t('nav_shop'),     to: '/shop' },
+                { label: t('nav_about'),    to: '/about' },
+                { label: t('nav_reviews'),  to: '/reviews' },
+                { label: t('nav_contact'),  to: '/contact' },
               ].map(link => (
                 <li key={link.to}>
                   <Link to={link.to} className="text-white/60 hover:text-white text-sm transition-colors">
@@ -68,7 +78,7 @@ export default function Footer() {
           <div>
             <h4 className="font-heading font-bold mb-4 text-simba-orange">{t('cat_title')}</h4>
             <ul className="space-y-2.5">
-              {['Food Products', 'Alcoholic Drinks', 'Cosmetics & Personal Care', 'Baby Products', 'Kitchenware & Electronics'].map(cat => (
+              {FOOTER_CATEGORIES.map(cat => (
                 <li key={cat}>
                   <Link to={`/shop?category=${encodeURIComponent(cat)}`} className="text-white/60 hover:text-white text-sm transition-colors">
                     {cat}
@@ -78,11 +88,11 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Branches */}
+          {/* Branches + Contact */}
           <div>
             <h4 className="font-heading font-bold mb-4 text-simba-orange">{t('our_branches')}</h4>
             <ul className="space-y-2">
-              {['City Center (UTC)','KN 5 Road','Kimironko','Nyamirambo','Remera','Gisenyi'].map(b => (
+              {FOOTER_BRANCHES.map(b => (
                 <li key={b} className="flex items-center gap-2 text-white/60 text-sm">
                   <MapPin className="w-3.5 h-3.5 text-simba-orange shrink-0" />
                   {b}
@@ -104,8 +114,8 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-white/10 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-white/40 text-xs">
-          <p>© 2024 Simba Supermarket. All rights reserved.</p>
-          <p>Built with ❤️ in Kigali, Rwanda</p>
+          <p>© {new Date().getFullYear()} Simba Supermarket. {t('stores_open')}.</p>
+          <p>{t('hero_stat3')} 🦁</p>
         </div>
       </div>
     </footer>
