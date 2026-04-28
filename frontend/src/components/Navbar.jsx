@@ -54,10 +54,10 @@ export default function Navbar() {
       await logout()
       setUserMenuOpen(false)
       setMobileOpen(false)
-      addToast('Logged out successfully.', 'success')
+      addToast(t('logout_success'), 'success')
       navigate('/')
     } catch {
-      addToast('We could not log you out right now. Please try again.', 'error')
+      addToast(t('logout_error'), 'error')
     }
   }
 
@@ -130,20 +130,25 @@ export default function Navbar() {
                       <User className="w-4 h-4 text-white" />
                     </div>
                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300 max-w-[100px] truncate">
-                      {profile?.full_name?.split(' ')[0] || 'Account'}
+                      {profile?.full_name?.split(' ')[0] || t('account_label')}
                     </span>
                   </button>
                   {userMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 py-1 z-50">
+                    <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 py-1 z-50">
+                      <Link to="/profile" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <User className="w-4 h-4" /> {t('my_profile')}
+                      </Link>
+                      <Link to="/my-orders" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <ShoppingBag className="w-4 h-4" /> {t('my_orders_title')}
+                      </Link>
                       {profile?.role === 'market_rep' && (
                         <Link to="/admin" onClick={() => setUserMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-                          <LayoutDashboard className="w-4 h-4" />
-                          {t('nav_dashboard')}
+                          <LayoutDashboard className="w-4 h-4" /> {t('nav_dashboard')}
                         </Link>
                       )}
+                      <div className="border-t border-gray-100 dark:border-gray-700 my-1" />
                       <button onClick={handleLogout} className="flex items-center gap-2 w-full px-4 py-2.5 text-sm text-simba-red hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <LogOut className="w-4 h-4" />
-                        {t('nav_logout')}
+                        <LogOut className="w-4 h-4" /> {t('nav_logout')}
                       </button>
                     </div>
                   )}
@@ -224,11 +229,18 @@ export default function Navbar() {
               <LanguageSwitcher />
               <DarkModeToggle />
             </div>
-            {user ? (
+            {user && (<>
+              <Link to="/profile" className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium">
+                <User className="w-5 h-5 text-simba-red" />{t('my_profile')}
+              </Link>
+              <Link to="/my-orders" className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium">
+                <ShoppingBag className="w-5 h-5 text-simba-red" />{t('my_orders_title')}
+              </Link>
               <button onClick={handleLogout} className="flex items-center gap-3 px-3 py-3 rounded-xl text-simba-red hover:bg-red-50 dark:hover:bg-red-900/20 font-medium w-full">
                 <LogOut className="w-5 h-5" />{t('nav_logout')}
               </button>
-            ) : (
+            </>)}
+            {!user && (
               <div className="flex gap-2 pt-2">
                 <Link to="/login" className="flex-1 text-center border border-simba-red text-simba-red rounded-full py-2.5 font-semibold text-sm">{t('nav_login')}</Link>
                 <Link to="/register" className="flex-1 text-center bg-simba-red text-white rounded-full py-2.5 font-semibold text-sm">{t('nav_register')}</Link>
@@ -253,10 +265,10 @@ export default function Navbar() {
           {count > 0 && <span className="absolute top-0 right-2 bg-simba-red text-white text-xs font-bold w-4 h-4 rounded-full flex items-center justify-center">{count}</span>}
           <span className="text-xs text-gray-400">{t('nav_cart')}</span>
         </button>
-        <Link to={user ? (profile?.role === 'market_rep' ? '/admin' : '/shop') : '/login'} className="flex flex-col items-center gap-0.5 px-3 py-1">
-          <User className={`w-5 h-5 ${(location.pathname === '/login' || location.pathname === '/admin') ? 'text-simba-red' : 'text-gray-400'}`} />
-          <span className={`text-xs ${(location.pathname === '/login' || location.pathname === '/admin') ? 'text-simba-red font-semibold' : 'text-gray-400'}`}>
-            {user ? (profile?.role === 'market_rep' ? t('nav_dashboard') : t('profile')) : t('nav_login')}
+        <Link to={user ? '/profile' : '/login'} className="flex flex-col items-center gap-0.5 px-3 py-1">
+          <User className={`w-5 h-5 ${location.pathname === '/profile' || location.pathname === '/login' ? 'text-simba-red' : 'text-gray-400'}`} />
+          <span className={`text-xs ${location.pathname === '/profile' || location.pathname === '/login' ? 'text-simba-red font-semibold' : 'text-gray-400'}`}>
+            {user ? t('my_profile') : t('nav_login')}
           </span>
         </Link>
       </div>

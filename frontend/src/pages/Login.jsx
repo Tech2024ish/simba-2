@@ -23,11 +23,11 @@ export default function Login() {
     setError('')
     setLoading(true)
     try {
-      const { user } = await login(form.email, form.password)
-      addToast(`Welcome back!`, 'success')
+      await login(form.email, form.password)
+      addToast(t('login_success'), 'success')
       navigate(next)
     } catch (err) {
-      setError(err.message || 'Login failed. Check your credentials.')
+      setError(err.message || t('login_error'))
     } finally {
       setLoading(false)
     }
@@ -94,11 +94,25 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Test credentials hint */}
-          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl">
-            <p className="text-xs text-blue-600 dark:text-blue-400 font-medium mb-1">Test accounts:</p>
-            <p className="text-xs text-blue-500 dark:text-blue-400">Buyer: buyer@test.com / password123</p>
-            <p className="text-xs text-blue-500 dark:text-blue-400">Admin: admin@test.com / admin123</p>
+          {/* Demo credentials — clickable to auto-fill */}
+          <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
+            <p className="text-xs font-bold text-amber-700 dark:text-amber-400 mb-2">{t('demo_title')}</p>
+            <div className="space-y-1.5">
+              {[
+                { label: t('demo_buyer_label'), email: 'buyer@test.com', password: 'password123' },
+                { label: t('demo_rep_label'), email: 'admin@test.com', password: 'admin123' },
+              ].map(demo => (
+                <button key={demo.email} type="button"
+                  onClick={() => setForm({ email: demo.email, password: demo.password })}
+                  className="w-full text-left flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-white dark:bg-gray-800 hover:bg-amber-100 dark:hover:bg-amber-900/30 transition-colors group">
+                  <div>
+                    <span className="text-xs font-semibold text-amber-700 dark:text-amber-400">{demo.label}: </span>
+                    <span className="text-xs text-gray-600 dark:text-gray-400">{demo.email}</span>
+                  </div>
+                  <span className="text-xs text-amber-600 dark:text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity">{t('demo_click')} →</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 

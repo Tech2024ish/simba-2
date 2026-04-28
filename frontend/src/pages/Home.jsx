@@ -346,7 +346,7 @@ export default function Home() {
           </h3>
           {!user ? (
             <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
-              <Link to="/login" className="text-simba-red font-semibold hover:underline">{t('sign_in')}</Link> {t('sign_in_checkout').replace('Please sign in to checkout','to leave a review')}
+              <Link to="/login" className="text-simba-red font-semibold hover:underline">{t('sign_in')}</Link> {t('review_sign_in_prompt').replace(`${t('sign_in')} `, '')}
             </p>
           ) : (
             <form onSubmit={submitReview} className="space-y-4">

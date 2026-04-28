@@ -27,12 +27,12 @@ export default function OrderSuccess() {
         <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 border border-green-100 dark:border-green-800 text-left space-y-3">
           <div className="flex items-center gap-2 text-green-700 dark:text-green-400 font-semibold">
             <Package className="w-5 h-5" />
-            What happens next?
+            {t('success_next_title')}
           </div>
           <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-            <li className="flex items-start gap-2"><span className="text-green-500 font-bold mt-0.5">✓</span> Order received and being processed</li>
-            <li className="flex items-start gap-2"><span className="text-green-500 font-bold mt-0.5">✓</span> You'll receive a confirmation soon</li>
-            <li className="flex items-start gap-2"><span className="text-green-500 font-bold mt-0.5">✓</span> Delivery to your address in Kigali</li>
+            <li className="flex items-start gap-2"><span className="text-green-500 font-bold mt-0.5">✓</span> {t('success_next_1')}</li>
+            <li className="flex items-start gap-2"><span className="text-green-500 font-bold mt-0.5">✓</span> {t('success_next_2')}</li>
+            <li className="flex items-start gap-2"><span className="text-green-500 font-bold mt-0.5">✓</span> {t('success_next_3')}</li>
           </ul>
         </div>
 

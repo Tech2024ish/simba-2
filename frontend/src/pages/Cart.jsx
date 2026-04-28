@@ -22,7 +22,7 @@ export default function Cart() {
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <div className="text-7xl mb-6">🛒</div>
             <h2 className="font-heading font-bold text-2xl text-gray-800 dark:text-gray-200 mb-3">{t('cart_empty')}</h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-8">Start adding some amazing products!</p>
+            <p className="text-gray-500 dark:text-gray-400 mb-8">{t('cart_empty_cta')}</p>
             <Link to="/shop" className="btn-primary flex items-center gap-2">
               {t('hero_cta')} <ArrowRight className="w-5 h-5" />
             </Link>
@@ -87,7 +87,7 @@ export default function Cart() {
                     <span className="text-gray-800 dark:text-gray-200">{t('cart_sub')}</span>
                     <span className="text-simba-red">RWF {total.toLocaleString()}</span>
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">+ Delivery fee calculated at checkout</p>
+                  <p className="text-xs text-gray-400 mt-1">+ {t('checkout_delivery_fee')}</p>
                 </div>
                 <button onClick={() => navigate('/checkout')} className="w-full btn-primary flex items-center justify-center gap-2 py-4">
                   {t('cart_checkout')} <ArrowRight className="w-5 h-5" />

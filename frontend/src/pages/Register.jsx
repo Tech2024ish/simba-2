@@ -19,16 +19,16 @@ export default function Register() {
     e.preventDefault()
     setError('')
     if (form.password.length < 6) {
-      setError('Password must be at least 6 characters')
+      setError(t('register_password_error'))
       return
     }
     setLoading(true)
     try {
       await register(form.email, form.password, form.name, form.phone)
-      addToast('Account created! Please sign in.', 'success')
+      addToast(t('register_success'), 'success')
       navigate('/login')
     } catch (err) {
-      setError(err.message || 'Registration failed.')
+      setError(err.message || t('register_error'))
     } finally {
       setLoading(false)
     }

@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { ShoppingCart, ArrowLeft, Package, Tag, ChevronRight } from 'lucide-react'
+import { ShoppingCart, ArrowLeft, Package, Tag, ChevronRight, Star } from 'lucide-react'
 import { useLang } from '../context/LangContext.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import { useCart } from '../context/CartContext.jsx'
 import { useToast } from '../components/Toast.jsx'
 import { getProduct, getProducts } from '../api/products.js'
+import { getReviews } from '../api/reviews.js'
 import ProductCard from '../components/ProductCard.jsx'
 import { getProductImage } from '../utils/productImage.js'
 
 export default function ProductDetail() {
   const { id } = useParams()
   const { t } = useLang()
+  const { user } = useAuth()
   const { addItem } = useCart()
   const { addToast } = useToast()
   const navigate = useNavigate()
@@ -18,6 +21,7 @@ export default function ProductDetail() {
   const [related, setRelated] = useState([])
   const [loading, setLoading] = useState(true)
   const [qty, setQty] = useState(1)
+  const [reviews, setReviews] = useState([])
 
   useEffect(() => {
     setLoading(true)
@@ -30,6 +34,7 @@ export default function ProductDetail() {
       .then((data) => setRelated(data.products.filter((p2) => p2.id !== parseInt(id))))
       .catch(() => navigate('/shop'))
       .finally(() => setLoading(false))
+    getReviews().then(data => setReviews((data || []).slice(0, 4)))
   }, [id, navigate])
 
   const handleAddToCart = () => {
@@ -139,6 +144,46 @@ export default function ProductDetail() {
               </button>
             </div>
           </div>
+        </div>
+
+        {/* Reviews */}
+        <div className="mt-16">
+          <h2 className="font-heading font-bold text-2xl text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+            <Star className="w-6 h-6 text-yellow-400 fill-yellow-400" /> {t('product_reviews')}
+          </h2>
+          {reviews.length === 0 ? (
+            <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-sm">
+              <Star className="w-10 h-10 mx-auto mb-3 text-gray-200 dark:text-gray-700" />
+              <p className="text-gray-500 dark:text-gray-400 text-sm">{t('no_reviews_yet')}</p>
+              {user && (
+                <Link to="/reviews" className="mt-3 inline-flex items-center gap-1 text-simba-red text-sm font-semibold hover:underline">
+                  {t('be_first_review')} →
+                </Link>
+              )}
+            </div>
+          ) : (
+            <div className="grid sm:grid-cols-2 gap-4">
+              {reviews.map(r => (
+                <div key={r.id} className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm">
+                  <div className="flex items-center gap-1 mb-2">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className={`w-4 h-4 ${i < r.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 dark:text-gray-700'}`} />
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-3">"{r.comment}"</p>
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-simba-red flex items-center justify-center text-white text-xs font-bold">
+                      {r.user_name?.[0]?.toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold text-gray-700 dark:text-gray-300">{r.user_name}</p>
+                      <p className="text-xs text-gray-400">{new Date(r.created_at).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {related.length > 0 && (

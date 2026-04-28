@@ -94,11 +94,11 @@ export default function Checkout() {
 
   const validate = () => {
     const errs = {}
-    if (!form.name.trim()) errs.name = 'Required'
-    if (!form.email.trim()) errs.email = 'Required'
-    if (!form.phone.trim()) errs.phone = 'Required'
-    if (!form.address.trim()) errs.address = 'Required'
-    if (!form.city.trim()) errs.city = 'Required'
+    if (!form.name.trim()) errs.name = t('checkout_required')
+    if (!form.email.trim()) errs.email = t('checkout_required')
+    if (!form.phone.trim()) errs.phone = t('checkout_required')
+    if (!form.address.trim()) errs.address = t('checkout_required')
+    if (!form.city.trim()) errs.city = t('checkout_required')
     return errs
   }
 
@@ -110,12 +110,12 @@ export default function Checkout() {
       return
     }
     if (items.length === 0) {
-      addToast('Your cart is empty.', 'info')
+      addToast(t('cart_empty'), 'info')
       navigate('/shop')
       return
     }
     if (normalizedItems.length !== items.length || normalizedTotal <= 0) {
-      addToast('Your cart has invalid items. Please update it and try again.', 'error')
+      addToast(t('checkout_invalid_cart'), 'error')
       navigate('/cart')
       return
     }
@@ -139,14 +139,14 @@ export default function Checkout() {
       }, token), 30000, 'Checkout timed out')
 
       clearCart()
-      addToast('Order placed successfully.', 'success')
+      addToast(t('checkout_success'), 'success')
       navigate('/order-success')
     } catch (err) {
       const message = err?.message === 'Session timed out'
-        ? 'Your session took too long to load. Please sign in again and retry.'
+        ? t('checkout_session_error')
         : err?.code === 'ECONNABORTED' || err?.message === 'Checkout timed out'
-        ? 'Checkout timed out. Please try again.'
-        : err?.response?.data?.detail || 'We could not place your order right now. Please try again.'
+        ? t('checkout_timeout')
+        : err?.response?.data?.detail || t('checkout_error')
       addToast(message, 'error')
     } finally {
       setSubmitting(false)
@@ -175,10 +175,10 @@ export default function Checkout() {
         {items.length === 0 && (
           <div className="card p-6 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h2 className="font-heading font-bold text-lg text-gray-900 dark:text-white">Your cart is empty</h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Add a few products before placing an order.</p>
+              <h2 className="font-heading font-bold text-lg text-gray-900 dark:text-white">{t('cart_empty_title')}</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('cart_empty_sub')}</p>
             </div>
-            <Link to="/shop" className="btn-primary text-center">Continue shopping</Link>
+            <Link to="/shop" className="btn-primary text-center">{t('continue_shopping')}</Link>
           </div>
         )}
 
@@ -285,7 +285,7 @@ export default function Checkout() {
                     <><Lock className="w-5 h-5" /> {t('place_order')}</>
                   )}
                 </button>
-                <p className="text-xs text-center text-gray-400">{itemCount} {itemCount === 1 ? 'item' : 'items'} - RWF {normalizedTotal.toLocaleString()}</p>
+                <p className="text-xs text-center text-gray-400">{itemCount} {itemCount === 1 ? t('checkout_summary_suffix_one') : t('checkout_summary_suffix_other')} - RWF {normalizedTotal.toLocaleString()}</p>
               </div>
             </div>
           </div>

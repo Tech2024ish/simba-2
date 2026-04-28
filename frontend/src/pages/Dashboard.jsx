@@ -145,6 +145,11 @@ export default function Dashboard() {
     !prodSearch || p.name.toLowerCase().includes(prodSearch.toLowerCase()) || p.category.toLowerCase().includes(prodSearch.toLowerCase())
   )
 
+  const pendingOrders = orders
+    .filter((order) => order.status === 'pending')
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 3)
+
   const STAT_CARDS = stats ? [
     { icon: ShoppingBag, label: t('dash_orders'),   value: stats.total_orders,                       color: 'bg-simba-navy',  iconColor: 'text-blue-300' },
     { icon: Clock,       label: t('dash_pending'),  value: stats.pending_orders,                     color: 'bg-yellow-500',  iconColor: 'text-yellow-200' },
@@ -162,12 +167,12 @@ export default function Dashboard() {
               <span className="text-2xl">🦁</span>
               <div>
                 <p className="font-bold text-white font-heading">Simba Admin</p>
-                <p className="text-white/50 text-xs">Market Rep</p>
+                <p className="text-white/50 text-xs">{t('dash_admin_role')}</p>
               </div>
             </div>
           </div>
           {[
-            { icon: LayoutDashboard, label: t('nav_dashboard'), id: 'overview' },
+            { icon: LayoutDashboard, label: t('dash_overview'), id: 'overview' },
             { icon: ShoppingBag,     label: t('orders_tab'),    id: 'orders' },
             { icon: Package,         label: t('products_tab'),  id: 'products' },
           ].map(item => (
@@ -190,7 +195,7 @@ export default function Dashboard() {
 
           {/* Mobile tabs */}
           <div className="flex gap-2 mb-6 overflow-x-auto scrollbar-hide lg:hidden">
-            {[{ id: 'orders', label: t('orders_tab') }, { id: 'products', label: t('products_tab') }].map(item => (
+            {[{ id: 'overview', label: t('dash_overview') }, { id: 'orders', label: t('orders_tab') }, { id: 'products', label: t('products_tab') }].map(item => (
               <button key={item.id} onClick={() => setTab(item.id)}
                 className={`shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-all ${tab === item.id ? 'bg-simba-red text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'}`}>
                 {item.label}
@@ -212,6 +217,95 @@ export default function Dashboard() {
               ))
             }
           </div>
+
+          {(tab === 'overview' || tab === 'orders') && (
+            <div className="grid xl:grid-cols-[1.1fr,1.4fr] gap-6 mb-8">
+              <section className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-5">
+                <div className="flex items-start justify-between gap-4 mb-4">
+                  <div>
+                    <h2 className="font-heading font-bold text-lg text-gray-900 dark:text-white">{t('dash_attention')}</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{t('dash_attention_sub')}</p>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400 text-xs font-bold">
+                    {stats?.pending_orders ?? 0} {t('status_pending')}
+                  </span>
+                </div>
+
+                {pendingOrders.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 px-4 py-8 text-center text-sm text-gray-400">
+                    {t('dash_pending_empty')}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {pendingOrders.map((order) => (
+                      <div key={order.id} className="rounded-2xl border border-gray-100 dark:border-gray-700 p-4">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div>
+                            <p className="font-semibold text-gray-900 dark:text-white text-sm">{order.customer_name}</p>
+                            <p className="text-xs text-gray-400">#{order.id.slice(0, 8)} • {new Date(order.created_at).toLocaleString()}</p>
+                          </div>
+                          <span className="text-sm font-bold text-simba-red">RWF {order.total?.toLocaleString()}</span>
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-2 text-xs text-gray-500 dark:text-gray-400 mb-3">
+                          <p>{t('dash_customer_contact')}: {order.customer_email}</p>
+                          <p>{t('dash_payment')}: {order.payment_method}</p>
+                          <p>{t('dash_delivery')}: {order.address}, {order.city}</p>
+                          <p>{Array.isArray(order.items) ? order.items.length : 0} {t('items_count')}</p>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          <button
+                            disabled={updating === order.id}
+                            onClick={() => handleStatusUpdate(order.id, 'approved')}
+                            className="px-3 py-2 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-xl text-xs font-bold hover:bg-green-200 transition-colors disabled:opacity-50"
+                          >
+                            {t('btn_approve')}
+                          </button>
+                          <button
+                            disabled={updating === order.id}
+                            onClick={() => handleStatusUpdate(order.id, 'rejected')}
+                            className="px-3 py-2 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 rounded-xl text-xs font-bold hover:bg-red-200 transition-colors disabled:opacity-50"
+                          >
+                            {t('btn_reject')}
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+
+              <section className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-5">
+                <div className="mb-4">
+                  <h2 className="font-heading font-bold text-lg text-gray-900 dark:text-white">{t('dash_recent_orders')}</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t('dash_recent_sub')}</p>
+                </div>
+                <div className="space-y-3">
+                  {orders.slice(0, 4).map((order) => {
+                    const config = STATUS_CONFIG[order.status] || STATUS_CONFIG.pending
+                    const Icon = config.icon
+                    return (
+                      <div key={order.id} className="rounded-2xl border border-gray-100 dark:border-gray-700 p-4">
+                        <div className="flex items-start justify-between gap-3 mb-2">
+                          <div>
+                            <p className="font-semibold text-gray-900 dark:text-white text-sm">{order.customer_name}</p>
+                            <p className="text-xs text-gray-400">{order.customer_email}</p>
+                          </div>
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${config.class}`}>
+                            <Icon className="w-3 h-3" />{t(config.label)}
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500 dark:text-gray-400">
+                          <span>#{order.id.slice(0, 8)} • {new Date(order.created_at).toLocaleDateString()}</span>
+                          <span className="font-semibold text-gray-700 dark:text-gray-300">{Array.isArray(order.items) ? order.items.length : 0} {t('items_count')} • RWF {order.total?.toLocaleString()}</span>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+                <p className="mt-4 text-xs text-gray-400">{t('dash_actions_hint')}</p>
+              </section>
+            </div>
+          )}
 
           {/* ── ORDERS TAB ── */}
           {(tab === 'orders' || tab === 'overview') && (
@@ -321,7 +415,7 @@ export default function Dashboard() {
                 </div>
                 <button onClick={openAdd}
                   className="flex items-center gap-2 bg-simba-red text-white px-4 py-2.5 rounded-full text-sm font-bold hover:bg-red-700 transition-colors shrink-0">
-                  <Plus className="w-4 h-4" /> Add Product
+                  <Plus className="w-4 h-4" /> {t('dash_add_product_cta')}
                 </button>
               </div>
 
@@ -330,12 +424,12 @@ export default function Dashboard() {
                 <table className="w-full">
                   <thead>
                     <tr className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-gray-700">
-                      <th className="px-5 py-3 text-left">Product</th>
-                      <th className="px-5 py-3 text-left hidden md:table-cell">Category</th>
-                      <th className="px-5 py-3 text-left">Price</th>
-                      <th className="px-5 py-3 text-left hidden sm:table-cell">Unit</th>
-                      <th className="px-5 py-3 text-left">Status</th>
-                      <th className="px-5 py-3 text-left">Actions</th>
+                      <th className="px-5 py-3 text-left">{t('product_col_product')}</th>
+                      <th className="px-5 py-3 text-left hidden md:table-cell">{t('product_col_category')}</th>
+                      <th className="px-5 py-3 text-left">{t('product_col_price')}</th>
+                      <th className="px-5 py-3 text-left hidden sm:table-cell">{t('product_col_unit')}</th>
+                      <th className="px-5 py-3 text-left">{t('product_col_status')}</th>
+                      <th className="px-5 py-3 text-left">{t('product_col_actions')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
@@ -344,7 +438,7 @@ export default function Dashboard() {
                     )) : filteredProducts.length === 0 ? (
                       <tr><td colSpan={6} className="px-5 py-16 text-center text-gray-400">
                         <Package className="w-12 h-12 mx-auto mb-3 text-gray-200 dark:text-gray-700" />
-                        <p>No products found</p>
+                        <p>{t('no_products')}</p>
                       </td></tr>
                     ) : filteredProducts.map(p => (
                       <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors">
@@ -392,7 +486,7 @@ export default function Dashboard() {
               </div>
               {filteredProducts.length > 0 && (
                 <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
-                  {filteredProducts.length} of {products.length} products
+                  {t('products_showing')} {filteredProducts.length} {t('products_of')} {products.length} {t('products_items')}
                 </div>
               )}
             </div>
@@ -414,32 +508,32 @@ export default function Dashboard() {
             </div>
             <form onSubmit={handleSave} className="p-5 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Product Name *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('product_name')} *</label>
                 <input required type="text" value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))}
                   className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-simba-red focus:outline-none text-sm text-gray-800 dark:text-gray-200" />
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Price (RWF) *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('price_label')} *</label>
                   <input required type="number" min="0" step="0.01" value={form.price} onChange={e => setForm(f => ({...f, price: e.target.value}))}
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-simba-red focus:outline-none text-sm text-gray-800 dark:text-gray-200" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Unit</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('product_col_unit')}</label>
                   <input type="text" value={form.unit} onChange={e => setForm(f => ({...f, unit: e.target.value}))}
                     placeholder="Pcs, Kg, L..."
                     className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-simba-red focus:outline-none text-sm text-gray-800 dark:text-gray-200" />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('category_label')}</label>
                 <select value={form.category} onChange={e => setForm(f => ({...f, category: e.target.value}))}
                   className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-simba-red focus:outline-none text-sm text-gray-800 dark:text-gray-200">
                   {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Image URL</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('image_url')}</label>
                 <input type="url" value={form.image} onChange={e => setForm(f => ({...f, image: e.target.value}))}
                   placeholder="https://..."
                   className="w-full px-3 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-simba-red focus:outline-none text-sm text-gray-800 dark:text-gray-200" />
@@ -449,12 +543,12 @@ export default function Dashboard() {
                   onClick={() => setForm(f => ({...f, in_stock: !f.in_stock}))}>
                   <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${form.in_stock ? 'translate-x-5' : ''}`} />
                 </div>
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">In Stock</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{t('in_stock_toggle')}</span>
               </label>
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={() => setShowModal(false)}
                   className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button type="submit" disabled={saving}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-simba-red text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-50">
@@ -474,14 +568,14 @@ export default function Dashboard() {
             <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
               <Trash2 className="w-7 h-7 text-simba-red" />
             </div>
-            <h3 className="font-heading font-bold text-lg text-gray-900 dark:text-white mb-2">Delete Product?</h3>
+            <h3 className="font-heading font-bold text-lg text-gray-900 dark:text-white mb-2">{t('delete_product_title')}</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
               "<span className="font-medium text-gray-700 dark:text-gray-300">{confirmDelete.name}</span>" will be permanently removed.
             </p>
             <div className="flex gap-3">
               <button onClick={() => setConfirmDelete(null)}
                 className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-600 dark:text-gray-300 hover:bg-gray-50 transition-colors">
-                Cancel
+                {t('cancel')}
               </button>
               <button onClick={() => handleDelete(confirmDelete.id)} disabled={deletingId === confirmDelete.id}
                 className="flex-1 px-4 py-2.5 bg-simba-red text-white rounded-xl text-sm font-bold hover:bg-red-700 transition-colors disabled:opacity-50">
