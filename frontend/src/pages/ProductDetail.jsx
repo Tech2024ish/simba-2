@@ -6,6 +6,7 @@ import { useCart } from '../context/CartContext.jsx'
 import { useToast } from '../components/Toast.jsx'
 import { getProduct, getProducts } from '../api/products.js'
 import ProductCard from '../components/ProductCard.jsx'
+import { getProductImage } from '../utils/productImage.js'
 
 export default function ProductDetail() {
   const { id } = useParams()
@@ -76,10 +77,10 @@ export default function ProductDetail() {
           {/* Image */}
           <div className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-sm aspect-square">
             <img
-              src={product.image?.includes('placehold.co') ? `https://picsum.photos/seed/simba-${product.id}/600/600` : product.image}
+              src={product.image?.includes('placehold.co') ? getProductImage(product) : product.image}
               alt={product.name}
               className="w-full h-full object-cover"
-              onError={e => { e.target.src = `https://picsum.photos/seed/simba-fallback-${product.id}/600/600`; e.target.onerror = null }}
+              onError={e => { e.target.onerror = null }}
             />
           </div>
 
