@@ -71,6 +71,23 @@ export default function Home() {
               {t('hero_sub')}
             </p>
 
+            {/* Branch selector */}
+            <div className="relative max-w-sm mb-8">
+              <MapPin className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-simba-orange" />
+              <select
+                value={selectedBranch.name}
+                onChange={e => setSelectedBranch(BRANCHES.find(b => b.name === e.target.value))}
+                className="w-full appearance-none pl-10 pr-10 py-3 rounded-full bg-white/10 border border-white/30 text-white font-semibold focus:bg-white/20 focus:border-simba-orange focus:outline-none cursor-pointer transition-colors"
+              >
+                {BRANCHES.map(b => (
+                  <option key={b.name} value={b.name} className="text-gray-900 bg-white">
+                    {b.name} — {b.address}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-white/60" />
+            </div>
+
             <div className="flex flex-wrap gap-4 mb-12">
               <button
                 onClick={() => navigate('/shop')}
@@ -185,21 +202,6 @@ export default function Home() {
             {t('stores_title')}
           </h2>
           <p className="text-gray-500 dark:text-gray-400">{t('stores_sub')}</p>
-        </div>
-
-        {/* Branch selector */}
-        <div className="max-w-md mx-auto mb-6 relative">
-          <MapPin className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-simba-red" />
-          <select
-            value={selectedBranch.name}
-            onChange={e => setSelectedBranch(BRANCHES.find(b => b.name === e.target.value))}
-            className="w-full appearance-none pl-10 pr-10 py-3.5 rounded-2xl bg-white dark:bg-gray-800 border-2 border-simba-red/30 focus:border-simba-red text-gray-800 dark:text-gray-200 font-semibold shadow-sm focus:outline-none cursor-pointer transition-colors"
-          >
-            {BRANCHES.map(b => (
-              <option key={b.name} value={b.name}>{b.name} — {b.address}</option>
-            ))}
-          </select>
-          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
         </div>
 
         {/* Selected branch info */}
