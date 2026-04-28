@@ -1,11 +1,31 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight, Truck, Shield, Clock, Star, MapPin, ExternalLink } from 'lucide-react'
+import { ArrowRight, Truck, Shield, Clock, Star, MapPin, ChevronDown } from 'lucide-react'
+
 import { useLang } from '../context/LangContext.jsx'
 import { getProducts, getCategories } from '../api/products.js'
 import ProductCard from '../components/ProductCard.jsx'
-import CategoryCard from '../components/CategoryCard.jsx'
 import SkeletonCard from '../components/SkeletonCard.jsx'
+
+const BRANCHES = [
+  { name: 'City Center (UTC)',  address: 'Union Trade Centre, KN 4 Ave, Kigali', query: 'Simba+Supermarket+Union+Trade+Centre+KN+4+Ave+Kigali+Rwanda' },
+  { name: 'KN 5 Road',          address: 'KN 5 Rd, Kigali',                       query: 'Simba+Supermarket+KN+5+Rd+Kigali+Rwanda' },
+  { name: 'KG 541 Branch',      address: 'KG 541 St, Kigali',                     query: 'Simba+Supermarket+KG+541+St+Kigali+Rwanda' },
+  { name: 'Remera',             address: 'Kigali',                                query: '24Q5%2BR2R+Kigali+Rwanda' },
+  { name: 'Kimironko',          address: 'KG 192 St, Kimironko, Kigali',           query: '24XF%2BXVV+KG+192+St+Kigali+Rwanda' },
+  { name: 'Nyamirambo',         address: 'Kigali',                                query: '23H4%2B26V+Kigali+Rwanda' },
+  { name: 'Gisozi',             address: 'Kigali',                                query: '24G3%2BMCV+Kigali+Rwanda' },
+  { name: 'KK 35 Branch',       address: 'KK 35 Ave, Kigali',                     query: 'Simba+Supermarket+KK+35+Ave+Kigali+Rwanda' },
+  { name: 'Kicukiro',           address: 'Kigali',                                query: '24J3%2BQ3+Kigali+Rwanda' },
+  { name: 'Gisenyi (Rubavu)',   address: 'Gisenyi, Rubavu',                       query: '8754%2BP7W+Gisenyi+Rwanda' },
+]
+
+const CATEGORY_ICONS = {
+  "Alcoholic Drinks": "🍷", "Baby Products": "🍼", "Cleaning & Sanitary": "🧹",
+  "Cosmetics & Personal Care": "💄", "Food Products": "🥗", "General": "🛒",
+  "Kitchen Storage": "🗄️", "Kitchenware & Electronics": "🍳", "Pet Care": "🐾",
+  "Sports & Wellness": "💪",
+}
 
 export default function Home() {
   const { t } = useLang()
@@ -13,6 +33,7 @@ export default function Home() {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
+  const [selectedBranch, setSelectedBranch] = useState(BRANCHES[0])
 
   useEffect(() => {
     Promise.all([
@@ -107,7 +128,7 @@ export default function Home() {
 
       {/* Categories */}
       <section id="categories" className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-6">
           <h2 className="font-heading font-bold text-2xl md:text-3xl text-gray-900 dark:text-white">
             {t('cat_title')}
           </h2>
@@ -115,10 +136,20 @@ export default function Home() {
             {t('view_all')} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {categories.map(cat => (
-            <CategoryCard key={cat.name} category={cat} />
-          ))}
+        <div className="relative max-w-sm">
+          <select
+            defaultValue=""
+            onChange={e => { if (e.target.value) navigate(`/shop?category=${encodeURIComponent(e.target.value)}`) }}
+            className="w-full appearance-none pl-4 pr-10 py-3.5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200 font-medium shadow-sm focus:border-simba-red focus:outline-none cursor-pointer transition-colors"
+          >
+            <option value="" disabled>{t('all_categories')}</option>
+            {categories.map(cat => (
+              <option key={cat.name} value={cat.name}>
+                {CATEGORY_ICONS[cat.name] || '🛒'} {cat.name} ({cat.count})
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
         </div>
       </section>
 
@@ -149,51 +180,60 @@ export default function Home() {
 
       {/* Store Locations */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
-        <div className="text-center mb-10">
+        <div className="text-center mb-8">
           <h2 className="font-heading font-bold text-2xl md:text-3xl text-gray-900 dark:text-white mb-2">
             {t('stores_title')}
           </h2>
           <p className="text-gray-500 dark:text-gray-400">{t('stores_sub')}</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[
-            { name: 'City Center', address: 'Union Trade Centre, 1 KN 4 Ave, Kigali', plus: '3336+MHV' },
-            { name: 'KN 5 Road', address: 'KN 5 Rd, Kigali', plus: null },
-            { name: 'KG 541 Branch', address: 'KG 541 St, Kigali', plus: null },
-            { name: 'Remera', address: '24Q5+R2R, Kigali', plus: '24Q5+R2R' },
-            { name: 'Kimironko', address: 'KG 192 St, Kimironko, Kigali', plus: '24XF+XVV' },
-            { name: 'Nyamirambo', address: '23H4+26V, Kigali', plus: '23H4+26V' },
-            { name: 'Gisozi', address: '24G3+MCV, Kigali', plus: '24G3+MCV' },
-            { name: 'KK 35 Branch', address: 'KK 35 Ave, Kigali', plus: null },
-            { name: 'Kicukiro', address: '24J3+Q3, Kigali', plus: '24J3+Q3' },
-            { name: 'Gisenyi', address: 'Gisenyi (Rubavu)', plus: '8754+P7W' },
-          ].map(store => (
-            <div key={store.name} className="flex items-start gap-3 bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
-              <div className="w-9 h-9 rounded-full bg-simba-red/10 flex items-center justify-center shrink-0 mt-0.5">
-                <MapPin className="w-4 h-4 text-simba-red" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm text-gray-900 dark:text-gray-100">{store.name}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{store.address}</p>
-                <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 font-medium mt-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                  {t('stores_open')}
-                </span>
-              </div>
-              {store.plus && (
-                <a
-                  href={`https://maps.google.com/?q=${encodeURIComponent(store.plus + ', Kigali, Rwanda')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={e => e.stopPropagation()}
-                  className="shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-simba-red hover:bg-simba-red/10 transition-colors"
-                  title={t('stores_directions')}
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              )}
-            </div>
-          ))}
+
+        {/* Branch selector */}
+        <div className="max-w-md mx-auto mb-6 relative">
+          <MapPin className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-simba-red" />
+          <select
+            value={selectedBranch.name}
+            onChange={e => setSelectedBranch(BRANCHES.find(b => b.name === e.target.value))}
+            className="w-full appearance-none pl-10 pr-10 py-3.5 rounded-2xl bg-white dark:bg-gray-800 border-2 border-simba-red/30 focus:border-simba-red text-gray-800 dark:text-gray-200 font-semibold shadow-sm focus:outline-none cursor-pointer transition-colors"
+          >
+            {BRANCHES.map(b => (
+              <option key={b.name} value={b.name}>{b.name} — {b.address}</option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+        </div>
+
+        {/* Selected branch info */}
+        <div className="max-w-md mx-auto mb-4 flex items-center gap-2 px-4 py-2.5 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
+          <span className="w-2 h-2 rounded-full bg-green-500 shrink-0" />
+          <span className="text-sm font-medium text-green-700 dark:text-green-400">{t('stores_open')}</span>
+          <span className="text-gray-400 mx-1">·</span>
+          <span className="text-sm text-gray-600 dark:text-gray-300 truncate">{selectedBranch.address}</span>
+        </div>
+
+        {/* Embedded map */}
+        <div className="rounded-3xl overflow-hidden shadow-lg border border-gray-100 dark:border-gray-800" style={{ height: '420px' }}>
+          <iframe
+            key={selectedBranch.name}
+            title={selectedBranch.name}
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            loading="lazy"
+            allowFullScreen
+            referrerPolicy="no-referrer-when-downgrade"
+            src={`https://maps.google.com/maps?q=${selectedBranch.query}&output=embed&hl=en`}
+          />
+        </div>
+
+        <div className="text-center mt-4">
+          <a
+            href={`https://maps.google.com/?q=${selectedBranch.query}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 text-simba-red font-semibold text-sm hover:underline"
+          >
+            <MapPin className="w-4 h-4" /> {t('stores_directions')}
+          </a>
         </div>
       </section>
 
