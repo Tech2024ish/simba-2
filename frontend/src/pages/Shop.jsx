@@ -1,17 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Search, SlidersHorizontal, ChevronLeft, ChevronRight, X } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useLang } from '../context/LangContext.jsx'
 import { getProducts, getCategories } from '../api/products.js'
 import ProductCard from '../components/ProductCard.jsx'
 import SkeletonCard from '../components/SkeletonCard.jsx'
-
-const CATEGORY_ICONS = {
-  "Alcoholic Drinks": "🍷", "Baby Products": "🍼", "Cleaning & Sanitary": "🧹",
-  "Cosmetics & Personal Care": "💄", "Food Products": "🥗", "General": "🛒",
-  "Kitchen Storage": "🗄️", "Kitchenware & Electronics": "🍳", "Pet Care": "🐾",
-  "Sports & Wellness": "💪"
-}
 
 const SORT_OPTIONS = [
   { value: '', labelKey: 'sort_default' },
@@ -39,10 +32,11 @@ export default function Shop() {
   const sort = searchParams.get('sort') || ''
 
   const updateParams = useCallback((updates) => {
-    setSearchParams(prev => {
+    setSearchParams((prev) => {
       const next = new URLSearchParams(prev)
       Object.entries(updates).forEach(([k, v]) => {
-        if (v) next.set(k, v); else next.delete(k)
+        if (v) next.set(k, v)
+        else next.delete(k)
       })
       if ('category' in updates || 'search' in updates || 'sort' in updates) {
         next.delete('page')
@@ -54,7 +48,7 @@ export default function Shop() {
   useEffect(() => {
     setLoading(true)
     getProducts({ category, search, page, sort, limit: LIMIT })
-      .then(data => {
+      .then((data) => {
         setProducts(data.products)
         setTotal(data.total)
         setPages(data.pages)
@@ -69,6 +63,10 @@ export default function Shop() {
   useEffect(() => {
     setSearchInput(searchParams.get('search') || '')
   }, [searchParams])
+
+  useEffect(() => {
+    return () => clearTimeout(searchTimeout.current)
+  }, [])
 
   const handleSearchChange = (e) => {
     const val = e.target.value
@@ -86,8 +84,6 @@ export default function Shop() {
     <div className="page-enter min-h-screen pt-28 pb-28 md:pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex flex-col lg:flex-row gap-8">
-
-          {/* Sidebar */}
           <aside className="lg:w-64 shrink-0">
             <div className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm sticky top-24">
               <h3 className="font-heading font-bold text-lg mb-4">{t('cat_title')}</h3>
@@ -97,9 +93,9 @@ export default function Shop() {
                   !category ? 'bg-simba-red text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
                 }`}
               >
-                🛍️ {t('all_categories')}
+                {t('all_categories')}
               </button>
-              {categories.map(cat => (
+              {categories.map((cat) => (
                 <button
                   key={cat.name}
                   onClick={() => updateParams({ category: cat.name })}
@@ -107,7 +103,7 @@ export default function Shop() {
                     category === cat.name ? 'bg-simba-red text-white' : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300'
                   }`}
                 >
-                  <span>{CATEGORY_ICONS[cat.name]} {cat.name}</span>
+                  <span>{cat.name}</span>
                   <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${category === cat.name ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>
                     {cat.count}
                   </span>
@@ -116,9 +112,7 @@ export default function Shop() {
             </div>
           </aside>
 
-          {/* Main content */}
           <div className="flex-1 min-w-0">
-            {/* Top bar */}
             <div className="flex flex-col sm:flex-row gap-3 mb-6">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -131,7 +125,10 @@ export default function Shop() {
                 />
                 {searchInput && (
                   <button
-                    onClick={() => { setSearchInput(''); updateParams({ search: '' }) }}
+                    onClick={() => {
+                      setSearchInput('')
+                      updateParams({ search: '' })
+                    }}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
                     <X className="w-4 h-4" />
@@ -143,13 +140,12 @@ export default function Shop() {
                 onChange={(e) => updateParams({ sort: e.target.value })}
                 className="py-3 px-4 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 focus:border-simba-red focus:outline-none text-sm shadow-sm text-gray-700 dark:text-gray-300"
               >
-                {SORT_OPTIONS.map(o => (
+                {SORT_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>{t(o.labelKey)}</option>
                 ))}
               </select>
             </div>
 
-            {/* Category chips (mobile) */}
             <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-2 mb-4 lg:hidden">
               <button
                 onClick={() => updateParams({ category: '' })}
@@ -157,35 +153,33 @@ export default function Shop() {
               >
                 {t('filter_all')}
               </button>
-              {categories.map(cat => (
+              {categories.map((cat) => (
                 <button
                   key={cat.name}
                   onClick={() => updateParams({ category: cat.name })}
                   className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-bold transition-colors ${category === cat.name ? 'bg-simba-red text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400'}`}
                 >
-                  {CATEGORY_ICONS[cat.name]} {cat.name}
+                  {cat.name}
                 </button>
               ))}
             </div>
 
-            {/* Results count */}
             {!loading && (
               <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
                 {total > 0
-                  ? `${t('showing')} ${start}–${end} ${t('of')} ${total} ${t('results')}`
+                  ? `${t('showing')} ${start}-${end} ${t('of')} ${total} ${t('results')}`
                   : t('no_results')
                 }
               </p>
             )}
 
-            {/* Grid */}
             {loading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
               </div>
             ) : products.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
-                <div className="text-6xl mb-4">🔍</div>
+                <Search className="w-16 h-16 mb-4 text-gray-300 dark:text-gray-700" />
                 <h3 className="font-heading font-bold text-xl text-gray-800 dark:text-gray-200 mb-2">{t('no_results')}</h3>
                 <p className="text-gray-500 dark:text-gray-400 mb-6">{t('no_results_sub')}</p>
                 <button onClick={() => { setSearchInput(''); setSearchParams({}) }} className="btn-primary">
@@ -194,11 +188,10 @@ export default function Shop() {
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {products.map(p => <ProductCard key={p.id} product={p} />)}
+                {products.map((p) => <ProductCard key={p.id} product={p} />)}
               </div>
             )}
 
-            {/* Pagination */}
             {pages > 1 && !loading && (
               <div className="flex items-center justify-center gap-2 mt-10">
                 <button

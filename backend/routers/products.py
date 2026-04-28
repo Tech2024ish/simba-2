@@ -25,6 +25,12 @@ class ProductBody(BaseModel):
     image: Optional[str] = None
     in_stock: bool = True
 
+def get_next_product_id() -> int:
+    result = sb.table("products").select("id").order("id", desc=True).limit(1).execute()
+    if result.data:
+        return int(result.data[0]["id"]) + 1
+    return 1
+
 @router.get("")
 def list_products(
     category: str = None,
@@ -73,6 +79,7 @@ def create_product(body: ProductBody, authorization: str = Header(...)):
     token = authorization.replace("Bearer ", "")
     require_market_rep(token)
     result = sb.table("products").insert({
+        "id": get_next_product_id(),
         "name": body.name,
         "price": body.price,
         "category": body.category,
