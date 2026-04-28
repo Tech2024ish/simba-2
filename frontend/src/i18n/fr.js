@@ -57,4 +57,13 @@ export default {
   sign_in: "Se Connecter",
   search_placeholder: "Rechercher parmi 789 produits...",
   hero_stat1: "789 Produits", hero_stat2: "Livraison Rapide", hero_stat3: "Kigali, Rwanda",
+  trust_fast: "Livraison Rapide", trust_fast_sub: "Même jour à Kigali",
+  trust_secure: "Paiement Sécurisé", trust_secure_sub: "MTN MoMo & Espèces",
+  trust_returns: "Retours Faciles", trust_returns_sub: "Support 24h",
+  cta_title: "Prêt à commencer vos achats?",
+  cta_sub: "Rejoignez des milliers de clients satisfaits à Kigali qui achètent plus intelligemment avec Simba.",
+  refresh: "Actualiser", no_orders: "Aucune commande trouvée",
+  items_count: "articles", orders_showing: "Affichage",
+  orders_of: "sur", orders_orders: "commandes",
+  order_updated: "Commande mise à jour avec succès!",
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { LayoutDashboard, ShoppingBag, Package, TrendingUp, Clock, CheckCircle, XCircle, Truck, Search, ChevronDown, RefreshCw } from 'lucide-react'
+import { LayoutDashboard, ShoppingBag, Package, TrendingUp, Clock, CheckCircle, XCircle, Truck, Search, RefreshCw } from 'lucide-react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useLang } from '../context/LangContext.jsx'
 import { useToast } from '../components/Toast.jsx'
@@ -56,7 +56,7 @@ export default function Dashboard() {
           pending_orders: status === 'pending' ? prev.pending_orders + 1 : prev.pending_orders - (orders.find(o=>o.id===orderId)?.status==='pending' ? 1 : 0),
         }))
       }
-      addToast(`Order ${status}!`, 'success')
+      addToast(t('order_updated'), 'success')
       loadData()
     } catch {
       addToast(t('error_load'), 'error')
@@ -119,7 +119,7 @@ export default function Dashboard() {
           <div className="flex items-center justify-between mb-6">
             <h1 className="font-heading font-bold text-2xl text-gray-900 dark:text-white">{t('dash_title')}</h1>
             <button onClick={loadData} disabled={loading} className="flex items-center gap-2 text-sm text-gray-500 hover:text-simba-red transition-colors disabled:opacity-50">
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
+              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> {t('refresh')}
             </button>
           </div>
 
@@ -195,7 +195,7 @@ export default function Dashboard() {
                       <tr>
                         <td colSpan={7} className="px-5 py-16 text-center text-gray-400">
                           <ShoppingBag className="w-12 h-12 mx-auto mb-3 text-gray-200 dark:text-gray-700" />
-                          <p>No orders found</p>
+                          <p>{t('no_orders')}</p>
                         </td>
                       </tr>
                     ) : filteredOrders.map(order => {
@@ -214,7 +214,7 @@ export default function Dashboard() {
                           </td>
                           <td className="px-5 py-4 hidden md:table-cell">
                             <span className="text-sm text-gray-600 dark:text-gray-400">
-                              {Array.isArray(order.items) ? order.items.length : 0} items
+                              {Array.isArray(order.items) ? order.items.length : 0} {t('items_count')}
                             </span>
                           </td>
                           <td className="px-5 py-4">
@@ -276,7 +276,7 @@ export default function Dashboard() {
 
               {filteredOrders.length > 0 && (
                 <div className="px-5 py-3 border-t border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
-                  Showing {filteredOrders.length} of {orders.length} orders
+                  {t('orders_showing')} {filteredOrders.length} {t('orders_of')} {orders.length} {t('orders_orders')}
                 </div>
               )}
             </div>
@@ -288,7 +288,7 @@ export default function Dashboard() {
               <Package className="w-12 h-12 mx-auto mb-3 text-gray-300 dark:text-gray-600" />
               <h3 className="font-heading font-bold text-lg text-gray-800 dark:text-gray-200 mb-2">{t('products_tab')}</h3>
               <p className="text-gray-500 dark:text-gray-400 text-sm">
-                {stats ? `${stats.product_count} products in the database` : t('loading')}
+                {stats ? `${stats.product_count} ${t('items_count')}` : t('loading')}
               </p>
             </div>
           )}

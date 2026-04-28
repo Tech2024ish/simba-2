@@ -1,9 +1,9 @@
 import { useLang } from '../context/LangContext.jsx'
 
 const LANGS = [
-  { code: 'en', label: 'EN' },
-  { code: 'fr', label: 'FR' },
-  { code: 'rw', label: 'RW' },
+  { code: 'en', label: 'EN', flag: '🇬🇧', full: 'English' },
+  { code: 'fr', label: 'FR', flag: '🇫🇷', full: 'Français' },
+  { code: 'rw', label: 'RW', flag: '🇷🇼', full: 'Kinyarwanda' },
 ]
 
 export default function LanguageSwitcher() {
@@ -15,13 +15,16 @@ export default function LanguageSwitcher() {
         <button
           key={l.code}
           onClick={() => setLang(l.code)}
-          className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all duration-200 ${
+          title={l.full}
+          aria-label={`Switch to ${l.full}`}
+          className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold transition-all duration-200 ${
             lang === l.code
               ? 'bg-simba-red text-white shadow-sm'
               : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
           }`}
         >
-          {l.label}
+          <span>{l.flag}</span>
+          <span>{l.label}</span>
         </button>
       ))}
     </div>

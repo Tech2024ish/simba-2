@@ -55,4 +55,13 @@ export default {
   sign_in: "Sign In",
   search_placeholder: "Search 789 products...",
   hero_stat1: "789 Products", hero_stat2: "Fast Delivery", hero_stat3: "Kigali, Rwanda",
+  trust_fast: "Fast Delivery", trust_fast_sub: "Same day in Kigali",
+  trust_secure: "Secure Payment", trust_secure_sub: "MTN MoMo & Cash",
+  trust_returns: "Easy Returns", trust_returns_sub: "24h support",
+  cta_title: "Ready to start shopping?",
+  cta_sub: "Join thousands of happy customers in Kigali who shop smarter with Simba.",
+  refresh: "Refresh", no_orders: "No orders found",
+  items_count: "items", orders_showing: "Showing",
+  orders_of: "of", orders_orders: "orders",
+  order_updated: "Order updated successfully!",
 }

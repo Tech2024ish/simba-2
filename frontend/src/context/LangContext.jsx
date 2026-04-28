@@ -5,11 +5,14 @@ const LangContext = createContext(null)
 
 export function LangProvider({ children }) {
   const [lang, setLangState] = useState(() => {
-    return localStorage.getItem('simba_lang') || defaultLang
+    const saved = localStorage.getItem('simba_lang') || defaultLang
+    document.documentElement.lang = saved
+    return saved
   })
 
   const setLang = useCallback((l) => {
     localStorage.setItem('simba_lang', l)
+    document.documentElement.lang = l
     setLangState(l)
   }, [])
 

@@ -58,4 +58,13 @@ export default {
   sign_in: "Injira",
   search_placeholder: "Shakisha ibicuruzwa 789...",
   hero_stat1: "Ibicuruzwa 789", hero_stat2: "Gutangirira Vuba", hero_stat3: "Kigali, Rwanda",
+  trust_fast: "Gutanga Vuba", trust_fast_sub: "Ku munsi umwe i Kigali",
+  trust_secure: "Kwishyura Bitagengwa", trust_secure_sub: "MTN MoMo & Amafaranga",
+  trust_returns: "Gusubiza Biroroshye", trust_returns_sub: "Inkunga saa 24",
+  cta_title: "Witeguye Gutangira Guterura?",
+  cta_sub: "Injira mu miryango y'abakiriya bareshya i Kigali bagurana neza na Simba.",
+  refresh: "Subiramo", no_orders: "Nta matumiza yabonetse",
+  items_count: "ibicuruzwa", orders_showing: "Werekana",
+  orders_of: "muri", orders_orders: "amatumiza",
+  order_updated: "Itumiza ryavuguruwe neza!",
 }

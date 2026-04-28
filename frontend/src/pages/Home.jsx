@@ -87,17 +87,17 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
           <div className="grid grid-cols-3 gap-4">
             {[
-              { icon: Truck, text: 'Fast Delivery', sub: 'Same day in Kigali' },
-              { icon: Shield, text: 'Secure Payment', sub: 'MTN MoMo & Cash' },
-              { icon: Clock, text: 'Easy Returns', sub: '24h support' },
-            ].map(({ icon: Icon, text, sub }) => (
-              <div key={text} className="flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left">
+              { icon: Truck, textKey: 'trust_fast', subKey: 'trust_fast_sub' },
+              { icon: Shield, textKey: 'trust_secure', subKey: 'trust_secure_sub' },
+              { icon: Clock, textKey: 'trust_returns', subKey: 'trust_returns_sub' },
+            ].map(({ icon: Icon, textKey, subKey }) => (
+              <div key={textKey} className="flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left">
                 <div className="w-10 h-10 rounded-full bg-simba-red/10 flex items-center justify-center shrink-0">
                   <Icon className="w-5 h-5 text-simba-red" />
                 </div>
                 <div>
-                  <p className="font-bold text-sm text-gray-800 dark:text-gray-200">{text}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{sub}</p>
+                  <p className="font-bold text-sm text-gray-800 dark:text-gray-200">{t(textKey)}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{t(subKey)}</p>
                 </div>
               </div>
             ))}
@@ -153,10 +153,10 @@ export default function Home() {
           <div className="absolute inset-0 opacity-10 text-[120px] flex items-center justify-center">🛒</div>
           <div className="relative">
             <h2 className="font-heading font-bold text-3xl md:text-4xl mb-4">
-              Ready to start shopping?
+              {t('cta_title')}
             </h2>
             <p className="text-white/80 text-lg mb-8 max-w-xl mx-auto">
-              Join thousands of happy customers in Kigali who shop smarter with Simba.
+              {t('cta_sub')}
             </p>
             <Link to="/shop" className="inline-flex items-center gap-2 bg-white text-simba-red font-bold px-8 py-4 rounded-full hover:scale-105 transition-all duration-200 shadow-lg">
               {t('hero_cta')} <ArrowRight className="w-5 h-5" />
