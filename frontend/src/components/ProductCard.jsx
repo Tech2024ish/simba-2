@@ -17,6 +17,13 @@ const CATEGORY_ICONS = {
   "Sports & Wellness": "💪"
 }
 
+const getImageSrc = (product) => {
+  if (!product.image || product.image.includes('placehold.co')) {
+    return `https://picsum.photos/seed/simba-${product.id}/300/300`
+  }
+  return product.image
+}
+
 export default function ProductCard({ product }) {
   const navigate = useNavigate()
   const { addItem } = useCart()
@@ -36,12 +43,13 @@ export default function ProductCard({ product }) {
     >
       <div className="relative aspect-square overflow-hidden bg-gray-50 dark:bg-gray-900">
         <img
-          src={product.image}
+          src={getImageSrc(product)}
           alt={product.name}
           loading="lazy"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           onError={(e) => {
-            e.target.src = `https://placehold.co/400x400/f8f9fa/1D3557?text=${encodeURIComponent(product.name.slice(0,2))}`
+            e.target.src = `https://picsum.photos/seed/simba-fallback-${product.id}/300/300`
+            e.target.onerror = null
           }}
         />
         <div className="absolute top-2 left-2">
