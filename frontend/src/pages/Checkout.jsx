@@ -41,6 +41,32 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState({})
 
+  const normalizedItems = useMemo(() => (
+    items
+      .map((item) => {
+        const price = Number(item.price)
+        const qty = Number(item.qty)
+
+        if (!Number.isFinite(price) || !Number.isFinite(qty) || qty < 1) {
+          return null
+        }
+
+        return {
+          id: item.id,
+          name: String(item.name || '').trim(),
+          price,
+          qty,
+          image: item.image || '',
+        }
+      })
+      .filter(Boolean)
+  ), [items])
+
+  const normalizedTotal = useMemo(
+    () => normalizedItems.reduce((sum, item) => sum + item.price * item.qty, 0),
+    [normalizedItems]
+  )
+
   useEffect(() => {
     setForm((current) => ({
       ...current,
@@ -86,6 +112,11 @@ export default function Checkout() {
       navigate('/shop')
       return
     }
+    if (normalizedItems.length !== items.length || normalizedTotal <= 0) {
+      addToast('Your cart has invalid items. Please update it and try again.', 'error')
+      navigate('/cart')
+      return
+    }
 
     setSubmitting(true)
     try {
@@ -94,17 +125,9 @@ export default function Checkout() {
         throw new Error('Missing session')
       }
 
-      const cartItems = items.map((i) => ({
-        id: i.id,
-        name: i.name,
-        price: i.price,
-        qty: i.qty,
-        image: i.image,
-      }))
-
       await withTimeout(createOrder({
-        items: cartItems,
-        total,
+        items: normalizedItems,
+        total: normalizedTotal,
         payment_method: form.payment,
         phone: form.phone.trim(),
         address: form.address.trim(),
@@ -239,14 +262,14 @@ export default function Checkout() {
                 </div>
                 <div className="border-t border-gray-100 dark:border-gray-700 pt-4 space-y-2">
                   <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
-                    <span>{t('cart_sub')}</span><span>RWF {total.toLocaleString()}</span>
+                    <span>{t('cart_sub')}</span><span>RWF {normalizedTotal.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400">
                     <span>{t('trust_fast')}</span><span className="text-green-600 font-medium">{t('delivery_free')}</span>
                   </div>
                   <div className="flex justify-between font-bold text-lg border-t border-gray-100 dark:border-gray-700 pt-3">
                     <span className="text-gray-800 dark:text-gray-200">{t('order_total_label')}</span>
-                    <span className="text-simba-red">RWF {total.toLocaleString()}</span>
+                    <span className="text-simba-red">RWF {normalizedTotal.toLocaleString()}</span>
                   </div>
                 </div>
                 <button
@@ -260,7 +283,7 @@ export default function Checkout() {
                     <><Lock className="w-5 h-5" /> {t('place_order')}</>
                   )}
                 </button>
-                <p className="text-xs text-center text-gray-400">{itemCount} {itemCount === 1 ? 'item' : 'items'} · RWF {total.toLocaleString()}</p>
+                <p className="text-xs text-center text-gray-400">{itemCount} {itemCount === 1 ? 'item' : 'items'} - RWF {normalizedTotal.toLocaleString()}</p>
               </div>
             </div>
           </div>
