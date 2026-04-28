@@ -1,10 +1,9 @@
 import client from './client.js'
 
 export const createOrder = (order, token) =>
-  client.post('/api/orders', order, token
-    ? { headers: { Authorization: `Bearer ${token}` } }
-    : undefined
-  ).then(r => r.data)
+  client.post('/api/orders', order, {
+    headers: { Authorization: `Bearer ${token}` }
+  }).then(r => r.data)
 
 export const getOrders = (token) =>
   client.get('/api/orders', {
