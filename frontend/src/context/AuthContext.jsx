@@ -69,7 +69,10 @@ export function AuthProvider({ children }) {
   }, [])
 
   const logout = useCallback(async () => {
-    await supabase.auth.signOut()
+    await supabase.auth.signOut({ scope: 'local' })
+    setUser(null)
+    setProfile(null)
+    setSession(null)
   }, [])
 
   const getToken = useCallback(() => {
