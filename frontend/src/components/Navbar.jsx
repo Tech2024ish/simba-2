@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { ShoppingCart, User, Menu, X, Home, ShoppingBag, LayoutDashboard, LogOut, Search } from 'lucide-react'
+import { ShoppingCart, User, Menu, X, Home, ShoppingBag, LayoutDashboard, LogOut, Search, Info, Phone, Star } from 'lucide-react'
 import { useCart } from '../context/CartContext.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useLang } from '../context/LangContext.jsx'
@@ -64,8 +64,24 @@ export default function Navbar() {
               <span className="font-heading font-bold text-xl text-simba-red tracking-tight">Simba</span>
             </Link>
 
+            {/* Desktop nav links */}
+            <div className="hidden md:flex items-center gap-1">
+              {[
+                { to: '/',        label: t('nav_home'),     icon: Home },
+                { to: '/shop',    label: t('nav_shop'),     icon: ShoppingBag },
+                { to: '/about',   label: t('nav_about'),    icon: Info },
+                { to: '/reviews', label: t('nav_reviews'),  icon: Star },
+                { to: '/contact', label: t('nav_contact'),  icon: Phone },
+              ].map(({ to, label, icon: Icon }) => (
+                <Link key={to} to={to}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${location.pathname === to ? 'text-simba-red bg-red-50 dark:bg-red-900/20' : 'text-gray-600 dark:text-gray-300 hover:text-simba-red hover:bg-gray-100 dark:hover:bg-gray-800'}`}>
+                  <Icon className="w-3.5 h-3.5" />{label}
+                </Link>
+              ))}
+            </div>
+
             {/* Search bar — desktop */}
-            <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-xl">
+            <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-md">
               <div className="relative w-full">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -180,12 +196,17 @@ export default function Navbar() {
         {/* Mobile menu */}
         {mobileOpen && (
           <div className="md:hidden border-t border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-4 space-y-2">
-            <Link to="/" className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium">
-              <Home className="w-5 h-5 text-simba-red" />{t('nav_home')}
-            </Link>
-            <Link to="/shop" className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium">
-              <ShoppingBag className="w-5 h-5 text-simba-red" />{t('nav_shop')}
-            </Link>
+            {[
+              { to: '/',        label: t('nav_home'),    Icon: Home },
+              { to: '/shop',    label: t('nav_shop'),    Icon: ShoppingBag },
+              { to: '/about',   label: t('nav_about'),   Icon: Info },
+              { to: '/reviews', label: t('nav_reviews'), Icon: Star },
+              { to: '/contact', label: t('nav_contact'), Icon: Phone },
+            ].map(({ to, label, Icon }) => (
+              <Link key={to} to={to} className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium">
+                <Icon className="w-5 h-5 text-simba-red" />{label}
+              </Link>
+            ))}
             {profile?.role === 'market_rep' && (
               <Link to="/admin" className="flex items-center gap-3 px-3 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 font-medium">
                 <LayoutDashboard className="w-5 h-5 text-simba-red" />{t('nav_dashboard')}

@@ -1,5 +1,6 @@
 export default {
   nav_home: "Accueil", nav_shop: "Boutique", nav_cart: "Panier",
+  nav_about: "À Propos", nav_contact: "Contact", nav_reviews: "Partager Expérience",
   nav_dashboard: "Tableau de Bord", nav_login: "Connexion", nav_logout: "Déconnexion",
   nav_register: "S'inscrire", nav_search: "Rechercher des produits...",
   hero_badge: "N°1 Supermarché en Ligne au Rwanda",
@@ -86,5 +87,8 @@ export default {
   about_desc: "Fondé à Kigali, Simba Supermarket est devenu la destination d'épicerie la plus fiable du Rwanda avec plus de 10 succursales dans tout le pays. Nous offrons des produits frais, des articles ménagers, des boissons et bien plus encore.",
   about_mission: "Notre Mission", about_mission_desc: "Rendre les produits de qualité accessibles à chaque famille rwandaise grâce à une expérience d'achat pratique, abordable et accueillante.",
   contact_title: "Contactez-Nous", contact_hours: "Ouvert tous les jours: 7h00 – 22h00",
-  contact_follow: "Suivez-Nous",
+  contact_follow: "Suivez-Nous", contact_subject: "Sujet", contact_message: "Votre Message",
+  contact_send: "Envoyer le Message", contact_sent: "Message envoyé! Nous vous répondrons bientôt.",
+  contact_name_ph: "Votre nom complet", contact_email_ph: "votre@email.com",
+  contact_subject_ph: "Comment pouvons-nous aider?", contact_message_ph: "Dites-nous en plus...",
 }

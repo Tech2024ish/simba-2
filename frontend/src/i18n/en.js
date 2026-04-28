@@ -1,5 +1,6 @@
 export default {
   nav_home: "Home", nav_shop: "Shop", nav_cart: "Cart",
+  nav_about: "About", nav_contact: "Contact", nav_reviews: "Share Experience",
   nav_dashboard: "Dashboard", nav_login: "Login", nav_logout: "Logout",
   nav_register: "Register", nav_search: "Search products...",
   hero_badge: "Rwanda's #1 Online Supermarket",
@@ -84,5 +85,8 @@ export default {
   about_desc: "Founded in Kigali, Simba Supermarket has grown to become Rwanda's most trusted grocery destination with 10+ branches across the country. We offer fresh produce, household goods, beverages, and much more — all under one roof at affordable prices.",
   about_mission: "Our Mission", about_mission_desc: "To make quality groceries accessible to every Rwandan family through a convenient, affordable, and welcoming shopping experience.",
   contact_title: "Contact Us", contact_hours: "Open Daily: 7:00 AM – 10:00 PM",
-  contact_follow: "Follow Us",
+  contact_follow: "Follow Us", contact_subject: "Subject", contact_message: "Your Message",
+  contact_send: "Send Message", contact_sent: "Message sent! We'll get back to you soon.",
+  contact_name_ph: "Your full name", contact_email_ph: "your@email.com",
+  contact_subject_ph: "How can we help?", contact_message_ph: "Tell us more...",
 }

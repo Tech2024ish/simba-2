@@ -13,6 +13,9 @@ import OrderSuccess from './pages/OrderSuccess.jsx'
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import Dashboard from './pages/Dashboard.jsx'
+import About from './pages/About.jsx'
+import Contact from './pages/Contact.jsx'
+import Reviews from './pages/Reviews.jsx'
 
 function initDarkMode() {
   const saved = localStorage.getItem('simba_dark')
@@ -40,6 +43,9 @@ export default function App() {
             </ProtectedRoute>
           } />
           <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/reviews" element={<Reviews />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/admin" element={

@@ -1,5 +1,6 @@
 export default {
   nav_home: "Ahabanza", nav_shop: "Guterura", nav_cart: "Agashya",
+  nav_about: "Ibyerekeye", nav_contact: "Twandikire", nav_reviews: "Sangira Uburambe",
   nav_dashboard: "Imbonerahamwe", nav_login: "Injira", nav_logout: "Sohoka",
   nav_register: "Iyandikishe", nav_search: "Shakisha ibicuruzwa...",
   hero_badge: "Isoko Nziza Cyane mu Rwanda",
@@ -87,5 +88,8 @@ export default {
   about_desc: "Yashinzwe i Kigali, Simba Supermarket yabaye isoko ry'ibiribwa ryizwi cyane mu Rwanda hamwe n'amashami 10+ mu gihugu hose. Dutanga imbuto nziza, ibikoresho bya nyumbwa, inzoga, n'ibindi byinshi.",
   about_mission: "Intego Yacu", about_mission_desc: "Gutuma ibiribwa by'ubuziranenge bigera ku muryango wose w'umunyarwanda binyuze mu burobyi bwo guterura bworoshye, bugura neza kandi bushimishije.",
   contact_title: "Twandikire", contact_hours: "Buri Munsi: 7:00 – 22:00",
-  contact_follow: "Dukurikire",
+  contact_follow: "Dukurikire", contact_subject: "Umutwe", contact_message: "Ubutumwa Bwawe",
+  contact_send: "Ohereza Ubutumwa", contact_sent: "Ubutumwa bwoherejwe! Tuzasubiza vuba.",
+  contact_name_ph: "Amazina yose", contact_email_ph: "imeyili@yawe.com",
+  contact_subject_ph: "Twafasha ute?", contact_message_ph: "Tubwire byinshi...",
 }
