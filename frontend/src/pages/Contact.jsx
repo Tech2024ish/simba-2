@@ -1,19 +1,9 @@
 import { useEffect, useState } from 'react'
 import { MapPin, Phone, Mail, Clock, Send, CheckCircle } from 'lucide-react'
 import { useLang } from '../context/LangContext.jsx'
-import { supabase, useAuth } from '../context/AuthContext.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import { useToast } from '../components/Toast.jsx'
-
-const REQUEST_TIMEOUT_MS = 15000
-
-function withTimeout(promise, ms, message) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => {
-      setTimeout(() => reject(new Error(message)), ms)
-    }),
-  ])
-}
+import { createContactMessage } from '../api/contact.js'
 
 export default function Contact() {
   const { t } = useLang()
@@ -48,27 +38,26 @@ export default function Contact() {
     setError('')
 
     try {
-      const { error: err } = await withTimeout(
-        supabase.from('contact_messages').insert({
-          name: form.name.trim(),
-          email: form.email.trim(),
-          subject: form.subject.trim(),
-          message: form.message.trim(),
-          user_id: user?.id || null,
-        }),
-        REQUEST_TIMEOUT_MS,
-        'Request timed out'
-      )
-
-      if (err) throw err
+      await createContactMessage({
+        name: form.name,
+        email: form.email,
+        subject: form.subject,
+        message: form.message,
+        user_id: user?.id || null,
+      })
 
       setSent(true)
-      setForm({ name: '', email: '', subject: '', message: '' })
+      setForm({
+        name: profile?.full_name || '',
+        email: user?.email || '',
+        subject: '',
+        message: '',
+      })
       addToast(t('contact_sent'), 'success')
     } catch (err) {
-      const message = err?.message === 'Request timed out'
-        ? 'Message could not be sent in time. Please try again.'
-        : 'We could not send your message right now. Please try again.'
+      const message = err?.code === 'ECONNABORTED'
+        ? 'Message timed out. Please try again.'
+        : err?.response?.data?.detail || 'We could not send your message right now. Please try again.'
       setError(message)
       addToast(message, 'error')
     } finally {
@@ -129,58 +118,27 @@ export default function Contact() {
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('form_name')} *</label>
-                    <input
-                      type="text"
-                      required
-                      value={form.name}
-                      onChange={set('name')}
-                      placeholder={t('contact_name_ph')}
-                      className={inputClass}
-                    />
+                    <input type="text" required value={form.name} onChange={set('name')} placeholder={t('contact_name_ph')} className={inputClass} />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('email_label')} *</label>
-                    <input
-                      type="email"
-                      required
-                      value={form.email}
-                      onChange={set('email')}
-                      placeholder={t('contact_email_ph')}
-                      className={inputClass}
-                    />
+                    <input type="email" required value={form.email} onChange={set('email')} placeholder={t('contact_email_ph')} className={inputClass} />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('contact_subject')}</label>
-                  <input
-                    type="text"
-                    value={form.subject}
-                    onChange={set('subject')}
-                    placeholder={t('contact_subject_ph')}
-                    className={inputClass}
-                  />
+                  <input type="text" value={form.subject} onChange={set('subject')} placeholder={t('contact_subject_ph')} className={inputClass} />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('contact_message')} *</label>
-                  <textarea
-                    required
-                    rows={5}
-                    value={form.message}
-                    onChange={set('message')}
-                    placeholder={t('contact_message_ph')}
-                    className={`${inputClass} resize-none`}
-                  />
+                  <textarea required rows={5} value={form.message} onChange={set('message')} placeholder={t('contact_message_ph')} className={`${inputClass} resize-none`} />
                 </div>
 
                 {error && <p className="text-simba-red text-sm">{error}</p>}
 
-                <button
-                  type="submit"
-                  disabled={sending}
-                  className="w-full flex items-center justify-center gap-2 bg-simba-red text-white rounded-full py-3.5 font-bold hover:bg-red-700 transition-colors disabled:opacity-50"
-                >
+                <button type="submit" disabled={sending} className="w-full flex items-center justify-center gap-2 bg-simba-red text-white rounded-full py-3.5 font-bold hover:bg-red-700 transition-colors disabled:opacity-50">
                   {sending
                     ? <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> {t('processing')}</>
                     : <><Send className="w-5 h-5" /> {t('contact_send')}</>

@@ -80,7 +80,7 @@ export default function Checkout() {
 
     setSubmitting(true)
     try {
-      const token = getToken()
+      const token = await getToken()
       if (!token) {
         throw new Error('Missing session')
       }

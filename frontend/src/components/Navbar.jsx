@@ -7,11 +7,13 @@ import { useLang } from '../context/LangContext.jsx'
 import LanguageSwitcher from './LanguageSwitcher.jsx'
 import DarkModeToggle from './DarkModeToggle.jsx'
 import CartDrawer from './CartDrawer.jsx'
+import { useToast } from './Toast.jsx'
 
 export default function Navbar() {
   const { count, cartBounce } = useCart()
   const { user, profile, logout } = useAuth()
   const { t } = useLang()
+  const { addToast } = useToast()
   const navigate = useNavigate()
   const location = useLocation()
   const [scrolled, setScrolled] = useState(false)
@@ -48,9 +50,15 @@ export default function Navbar() {
   }
 
   const handleLogout = async () => {
-    await logout()
-    setUserMenuOpen(false)
-    navigate('/')
+    try {
+      await logout()
+      setUserMenuOpen(false)
+      setMobileOpen(false)
+      addToast('Logged out successfully.', 'success')
+      navigate('/')
+    } catch {
+      addToast('We could not log you out right now. Please try again.', 'error')
+    }
   }
 
   return (

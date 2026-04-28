@@ -42,7 +42,7 @@ export default function Dashboard() {
   const [confirmDelete, setConfirmDelete] = useState(null)
 
   const loadData = useCallback(async () => {
-    const token = getToken()
+    const token = await getToken()
     if (!token) return
     setLoading(true)
     try {
@@ -72,7 +72,7 @@ export default function Dashboard() {
   useEffect(() => { if (tab === 'products') loadProducts() }, [tab, loadProducts])
 
   const handleStatusUpdate = async (orderId, status) => {
-    const token = getToken()
+    const token = await getToken()
     setUpdating(orderId)
     try {
       await updateOrder(orderId, status, token)
@@ -96,7 +96,7 @@ export default function Dashboard() {
   const handleSave = async (e) => {
     e.preventDefault()
     if (!form.name.trim() || !form.price) return
-    const token = getToken()
+    const token = await getToken()
     setSaving(true)
     try {
       const payload = { ...form, price: parseFloat(form.price) }
@@ -118,7 +118,7 @@ export default function Dashboard() {
   }
 
   const handleDelete = async (id) => {
-    const token = getToken()
+    const token = await getToken()
     setDeletingId(id)
     try {
       await deleteProduct(id, token)

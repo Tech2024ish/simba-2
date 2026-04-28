@@ -53,8 +53,14 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
+    setSession(data.session ?? null)
+    setUser(data.user ?? null)
+    if (data.user) {
+      const p = await fetchProfile(data.user.id)
+      setProfile(p)
+    }
     return data
-  }, [])
+  }, [fetchProfile])
 
   const register = useCallback(async (email, password, fullName, phone) => {
     const { data, error } = await supabase.auth.signUp({
@@ -69,15 +75,32 @@ export function AuthProvider({ children }) {
   }, [])
 
   const logout = useCallback(async () => {
-    await supabase.auth.signOut({ scope: 'local' })
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
     setUser(null)
     setProfile(null)
     setSession(null)
   }, [])
 
-  const getToken = useCallback(() => {
-    return session?.access_token || null
-  }, [session])
+  const getToken = useCallback(async () => {
+    const currentToken = session?.access_token
+    if (currentToken) return currentToken
+
+    const { data, error } = await supabase.auth.getSession()
+    if (error) throw error
+
+    const nextSession = data.session ?? null
+    setSession(nextSession)
+    setUser(nextSession?.user ?? null)
+    if (nextSession?.user) {
+      const p = await fetchProfile(nextSession.user.id)
+      setProfile(p)
+    } else {
+      setProfile(null)
+    }
+
+    return nextSession?.access_token || null
+  }, [fetchProfile, session?.access_token])
 
   const isMarketRep = profile?.role === 'market_rep'
 
