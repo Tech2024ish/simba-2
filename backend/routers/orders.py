@@ -24,6 +24,12 @@ def get_bearer_token(authorization: Optional[str]) -> str:
 
     return token
 
+
+def get_optional_bearer_token(authorization: Optional[str]) -> Optional[str]:
+    if not authorization:
+        return None
+    return get_bearer_token(authorization)
+
 def get_user(token: str):
     try:
         auth_response = sb.auth.get_user(token)
@@ -54,8 +60,8 @@ class OrderCreate(BaseModel):
 
 @router.post("")
 def create_order(order: OrderCreate, authorization: Optional[str] = Header(default=None)):
-    token = get_bearer_token(authorization)
-    user = get_user(token)
+    token = get_optional_bearer_token(authorization)
+    user = get_user(token) if token else None
     if not order.items:
         raise HTTPException(status_code=400, detail="Order must include at least one item")
     if order.payment_method not in VALID_PAYMENT_METHODS:
@@ -68,7 +74,7 @@ def create_order(order: OrderCreate, authorization: Optional[str] = Header(defau
 
     try:
         result = sb.table("orders").insert({
-            "user_id": user.id,
+            "user_id": user.id if user else None,
             "customer_name": order.customer_name.strip(),
             "customer_email": order.customer_email.strip(),
             "items": [item.model_dump() for item in order.items],

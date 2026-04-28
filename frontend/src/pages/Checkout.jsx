@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Smartphone, Banknote, CreditCard, ChevronRight, Lock } from 'lucide-react'
+import { Smartphone, Banknote, CreditCard, Lock } from 'lucide-react'
 import { useCart } from '../context/CartContext.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useLang } from '../context/LangContext.jsx'
@@ -76,20 +76,6 @@ export default function Checkout() {
     }))
   }, [profile?.full_name, profile?.phone, user?.email])
 
-  if (!user) {
-    return (
-      <div className="page-enter min-h-screen pt-28 flex items-center justify-center px-4">
-        <div className="text-center space-y-4 max-w-sm">
-          <Lock className="w-16 h-16 text-simba-red mx-auto" />
-          <h2 className="font-heading font-bold text-2xl text-gray-800 dark:text-gray-200">{t('sign_in_checkout')}</h2>
-          <Link to="/login?next=/checkout" className="btn-primary inline-flex items-center gap-2">
-            {t('sign_in')} <ChevronRight className="w-5 h-5" />
-          </Link>
-        </div>
-      </div>
-    )
-  }
-
   const validate = () => {
     const errs = {}
     if (!form.name.trim()) errs.name = 'Required'
@@ -120,10 +106,9 @@ export default function Checkout() {
 
     setSubmitting(true)
     try {
-      const token = await withTimeout(getToken(), 10000, 'Session timed out')
-      if (!token) {
-        throw new Error('Missing session')
-      }
+      const token = user
+        ? await withTimeout(getToken(), 10000, 'Session timed out')
+        : null
 
       await withTimeout(createOrder({
         items: normalizedItems,
@@ -169,6 +154,17 @@ export default function Checkout() {
         <h1 className="font-heading font-bold text-2xl md:text-3xl text-gray-900 dark:text-white mb-8 flex items-center gap-2">
           <Lock className="w-6 h-6 text-simba-red" /> {t('checkout_title')}
         </h1>
+
+        {!user && (
+          <div className="card p-4 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              You can place this order as a guest, or sign in to save your details and view your orders later.
+            </p>
+            <Link to="/login?next=/checkout" className="btn-outline text-center whitespace-nowrap">
+              {t('sign_in')}
+            </Link>
+          </div>
+        )}
 
         {items.length === 0 && (
           <div className="card p-6 mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
