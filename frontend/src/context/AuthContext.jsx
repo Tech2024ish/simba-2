@@ -8,6 +8,15 @@ const supabase = createClient(
 
 const AuthContext = createContext(null)
 
+function withTimeout(promise, ms = 8000) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Timed out')), ms)
+    }),
+  ])
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [profile, setProfile] = useState(null)
@@ -16,43 +25,57 @@ export function AuthProvider({ children }) {
 
   const fetchProfile = useCallback(async (userId) => {
     if (!userId) return null
-    const { data } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
-      .single()
+    const { data } = await withTimeout(
+      supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single()
+    )
     return data
   }, [])
 
-  const syncSessionState = useCallback(async (nextSession) => {
+  const syncSessionState = useCallback((nextSession) => {
     setSession(nextSession)
     setUser(nextSession?.user ?? null)
 
     if (!nextSession?.user) {
       setProfile(null)
-      return
+      return Promise.resolve()
     }
 
-    try {
-      const p = await fetchProfile(nextSession.user.id)
-      setProfile(p)
-    } catch {
-      setProfile(null)
-    }
+    return fetchProfile(nextSession.user.id)
+      .then((p) => setProfile(p))
+      .catch(() => setProfile(null))
   }, [fetchProfile])
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      await syncSessionState(session)
+    let mounted = true
+
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (!mounted) return
+        setLoading(false)
+        syncSessionState(session)
+      })
+      .catch(() => {
+        if (!mounted) return
+        setUser(null)
+        setProfile(null)
+        setSession(null)
+        setLoading(false)
+      })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!mounted) return
       setLoading(false)
+      syncSessionState(session)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      await syncSessionState(session)
-      setLoading(false)
-    })
-
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [syncSessionState])
 
   const login = useCallback(async (email, password) => {
