@@ -4,7 +4,7 @@ load_dotenv()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import products, orders, dashboard, contact
+from routers import products, orders, dashboard, contact, reviews
 
 app = FastAPI(title="Simba 2.0 API")
 
@@ -26,6 +26,7 @@ app.include_router(products.router, prefix="/api/products", tags=["products"])
 app.include_router(orders.router, prefix="/api/orders", tags=["orders"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["dashboard"])
 app.include_router(contact.router, prefix="/api/contact", tags=["contact"])
+app.include_router(reviews.router, prefix="/api/reviews", tags=["reviews"])
 
 @app.get("/")
 def root():

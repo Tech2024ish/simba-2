@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react'
 import { Star, Send, MessageSquare } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useLang } from '../context/LangContext.jsx'
-import { supabase } from '../context/AuthContext.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
+import { useToast } from '../components/Toast.jsx'
+import { getReviews, createReview } from '../api/reviews.js'
 
 export default function Reviews() {
   const { t } = useLang()
   const { user, profile } = useAuth()
+  const { addToast } = useToast()
 
   const [reviews, setReviews] = useState([])
   const [loading, setLoading] = useState(true)
@@ -17,9 +19,14 @@ export default function Reviews() {
 
   const load = async () => {
     setLoading(true)
-    const { data } = await supabase.from('reviews').select('*').order('created_at', { ascending: false })
-    if (data) setReviews(data)
-    setLoading(false)
+    try {
+      const data = await getReviews()
+      setReviews(data || [])
+    } catch {
+      addToast('We could not load reviews right now.', 'error')
+    } finally {
+      setLoading(false)
+    }
   }
 
   useEffect(() => { load() }, [])
@@ -27,27 +34,34 @@ export default function Reviews() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!form.comment.trim()) return
+
     setSubmitting(true)
-    const { error } = await supabase.from('reviews').insert({
-      user_id: user.id,
-      user_name: profile?.full_name || user.email.split('@')[0],
-      rating: form.rating,
-      comment: form.comment.trim(),
-    })
-    if (!error) {
+    try {
+      await createReview({
+        user_id: user?.id || null,
+        user_name: profile?.full_name || user?.email?.split('@')[0] || 'Customer',
+        rating: form.rating,
+        comment: form.comment.trim(),
+      })
       setMsg(t('review_submitted'))
       setForm({ rating: 5, comment: '' })
-      load()
+      addToast(t('review_submitted'), 'success')
+      await load()
+    } catch (err) {
+      const message = err?.code === 'ECONNABORTED'
+        ? 'Review submission timed out. Please try again.'
+        : 'We could not submit your review right now. Please try again.'
+      addToast(message, 'error')
+    } finally {
+      setSubmitting(false)
+      setTimeout(() => setMsg(''), 4000)
     }
-    setSubmitting(false)
-    setTimeout(() => setMsg(''), 4000)
   }
 
   const avg = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : null
 
   return (
     <div className="page-enter min-h-screen pt-24 pb-16">
-      {/* Header */}
       <section className="bg-gradient-to-br from-simba-navy to-blue-900 py-16 px-4 text-center">
         <h1 className="font-heading font-bold text-4xl text-white mb-3">{t('reviews_title')}</h1>
         <p className="text-white/70 text-lg mb-6">{t('reviews_sub')}</p>
@@ -68,8 +82,6 @@ export default function Reviews() {
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14">
         <div className="grid lg:grid-cols-3 gap-10">
-
-          {/* Reviews list */}
           <div className="lg:col-span-2">
             <h2 className="font-heading font-bold text-xl text-gray-900 dark:text-white mb-6">
               {reviews.length} {t('results')}
@@ -85,7 +97,7 @@ export default function Reviews() {
               </div>
             ) : (
               <div className="space-y-4">
-                {reviews.map(r => (
+                {reviews.map((r) => (
                   <div key={r.id} className="bg-white dark:bg-gray-800 rounded-2xl p-5 shadow-sm">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
@@ -110,7 +122,6 @@ export default function Reviews() {
             )}
           </div>
 
-          {/* Write review */}
           <div className="lg:col-span-1">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 sticky top-24">
               <h3 className="font-heading font-bold text-lg text-gray-900 dark:text-white mb-5 flex items-center gap-2">
@@ -128,7 +139,7 @@ export default function Reviews() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{t('your_rating')}</label>
                     <div className="flex gap-1">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <button key={i} type="button" onClick={() => setForm(f => ({ ...f, rating: i + 1 }))}>
+                        <button key={i} type="button" onClick={() => setForm((f) => ({ ...f, rating: i + 1 }))}>
                           <Star className={`w-8 h-8 transition-colors ${i < form.rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300 dark:text-gray-600 hover:text-yellow-300'}`} />
                         </button>
                       ))}
@@ -136,14 +147,21 @@ export default function Reviews() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('your_comment')} *</label>
-                    <textarea rows={4} required value={form.comment}
-                      onChange={e => setForm(f => ({ ...f, comment: e.target.value }))}
+                    <textarea
+                      rows={4}
+                      required
+                      value={form.comment}
+                      onChange={(e) => setForm((f) => ({ ...f, comment: e.target.value }))}
                       placeholder={t('review_placeholder')}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-simba-red focus:outline-none text-sm text-gray-800 dark:text-gray-200 resize-none" />
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 focus:border-simba-red focus:outline-none text-sm text-gray-800 dark:text-gray-200 resize-none"
+                    />
                   </div>
                   {msg && <p className="text-sm text-green-600 font-medium">{msg}</p>}
-                  <button type="submit" disabled={submitting}
-                    className="w-full flex items-center justify-center gap-2 bg-simba-red text-white rounded-full py-3 font-bold text-sm hover:bg-red-700 transition-colors disabled:opacity-50">
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full flex items-center justify-center gap-2 bg-simba-red text-white rounded-full py-3 font-bold text-sm hover:bg-red-700 transition-colors disabled:opacity-50"
+                  >
                     <Send className="w-4 h-4" />
                     {submitting ? '...' : t('submit_review')}
                   </button>
