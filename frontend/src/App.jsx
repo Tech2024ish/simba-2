@@ -3,6 +3,7 @@ import { useEffect } from 'react'
 import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
+import AiAssistant from './components/AiAssistant.jsx'
 
 import Home from './pages/Home.jsx'
 import Shop from './pages/Shop.jsx'
@@ -56,6 +57,7 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
+      <AiAssistant />
     </div>
   )
 }
