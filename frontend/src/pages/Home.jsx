@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight, Truck, Shield, Clock, Star } from 'lucide-react'
+import { ArrowRight, Truck, Shield, Clock, Star, MapPin, ExternalLink } from 'lucide-react'
 import { useLang } from '../context/LangContext.jsx'
 import { getProducts, getCategories } from '../api/products.js'
 import ProductCard from '../components/ProductCard.jsx'
@@ -144,6 +144,56 @@ export default function Home() {
               {t('view_all')} <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* Store Locations */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
+        <div className="text-center mb-10">
+          <h2 className="font-heading font-bold text-2xl md:text-3xl text-gray-900 dark:text-white mb-2">
+            {t('stores_title')}
+          </h2>
+          <p className="text-gray-500 dark:text-gray-400">{t('stores_sub')}</p>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[
+            { name: 'City Center', address: 'Union Trade Centre, 1 KN 4 Ave, Kigali', plus: '3336+MHV' },
+            { name: 'KN 5 Road', address: 'KN 5 Rd, Kigali', plus: null },
+            { name: 'KG 541 Branch', address: 'KG 541 St, Kigali', plus: null },
+            { name: 'Remera', address: '24Q5+R2R, Kigali', plus: '24Q5+R2R' },
+            { name: 'Kimironko', address: 'KG 192 St, Kimironko, Kigali', plus: '24XF+XVV' },
+            { name: 'Nyamirambo', address: '23H4+26V, Kigali', plus: '23H4+26V' },
+            { name: 'Gisozi', address: '24G3+MCV, Kigali', plus: '24G3+MCV' },
+            { name: 'KK 35 Branch', address: 'KK 35 Ave, Kigali', plus: null },
+            { name: 'Kicukiro', address: '24J3+Q3, Kigali', plus: '24J3+Q3' },
+            { name: 'Gisenyi', address: 'Gisenyi (Rubavu)', plus: '8754+P7W' },
+          ].map(store => (
+            <div key={store.name} className="flex items-start gap-3 bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-9 h-9 rounded-full bg-simba-red/10 flex items-center justify-center shrink-0 mt-0.5">
+                <MapPin className="w-4 h-4 text-simba-red" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm text-gray-900 dark:text-gray-100">{store.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">{store.address}</p>
+                <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 font-medium mt-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
+                  {t('stores_open')}
+                </span>
+              </div>
+              {store.plus && (
+                <a
+                  href={`https://maps.google.com/?q=${encodeURIComponent(store.plus + ', Kigali, Rwanda')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
+                  className="shrink-0 p-1.5 rounded-lg text-gray-400 hover:text-simba-red hover:bg-simba-red/10 transition-colors"
+                  title={t('stores_directions')}
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
+            </div>
+          ))}
         </div>
       </section>
 

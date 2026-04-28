@@ -57,6 +57,8 @@ export default {
   sign_in: "Se Connecter",
   search_placeholder: "Rechercher parmi 789 produits...",
   hero_stat1: "789 Produits", hero_stat2: "Livraison Rapide", hero_stat3: "Kigali, Rwanda",
+  stores_title: "Trouvez un Simba Près de Vous", stores_sub: "10+ succursales à travers le Rwanda — à Kigali et au-delà",
+  stores_open: "Ouvert tous les jours", stores_directions: "Obtenir l'itinéraire",
   trust_fast: "Livraison Rapide", trust_fast_sub: "Même jour à Kigali",
   trust_secure: "Paiement Sécurisé", trust_secure_sub: "MTN MoMo & Espèces",
   trust_returns: "Retours Faciles", trust_returns_sub: "Support 24h",
