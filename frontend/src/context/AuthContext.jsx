@@ -24,43 +24,43 @@ export function AuthProvider({ children }) {
     return data
   }, [])
 
+  const syncSessionState = useCallback(async (nextSession) => {
+    setSession(nextSession)
+    setUser(nextSession?.user ?? null)
+
+    if (!nextSession?.user) {
+      setProfile(null)
+      return
+    }
+
+    try {
+      const p = await fetchProfile(nextSession.user.id)
+      setProfile(p)
+    } catch {
+      setProfile(null)
+    }
+  }, [fetchProfile])
+
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        const p = await fetchProfile(session.user.id)
-        setProfile(p)
-      }
+      await syncSessionState(session)
       setLoading(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      if (session?.user) {
-        const p = await fetchProfile(session.user.id)
-        setProfile(p)
-      } else {
-        setProfile(null)
-      }
+      await syncSessionState(session)
       setLoading(false)
     })
 
     return () => subscription.unsubscribe()
-  }, [fetchProfile])
+  }, [syncSessionState])
 
   const login = useCallback(async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
-    setSession(data.session ?? null)
-    setUser(data.user ?? null)
-    if (data.user) {
-      const p = await fetchProfile(data.user.id)
-      setProfile(p)
-    }
+    await syncSessionState(data.session ?? null)
     return data
-  }, [fetchProfile])
+  }, [syncSessionState])
 
   const register = useCallback(async (email, password, fullName, phone) => {
     const { data, error } = await supabase.auth.signUp({
@@ -92,11 +92,12 @@ export function AuthProvider({ children }) {
     const nextSession = data.session ?? null
     setSession(nextSession)
     setUser(nextSession?.user ?? null)
-    if (nextSession?.user) {
-      const p = await fetchProfile(nextSession.user.id)
-      setProfile(p)
-    } else {
+    if (!nextSession?.user) {
       setProfile(null)
+    } else {
+      fetchProfile(nextSession.user.id)
+        .then((p) => setProfile(p))
+        .catch(() => setProfile(null))
     }
 
     return nextSession?.access_token || null

@@ -13,6 +13,15 @@ const PAYMENT_METHODS = [
   { id: 'card', icon: CreditCard, labelKey: 'payment_card', color: 'text-blue-600' },
 ]
 
+function withTimeout(promise, ms, message) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(message)), ms)
+    }),
+  ])
+}
+
 export default function Checkout() {
   const { items, total, clearCart } = useCart()
   const { user, profile, getToken } = useAuth()
@@ -80,7 +89,7 @@ export default function Checkout() {
 
     setSubmitting(true)
     try {
-      const token = await getToken()
+      const token = await withTimeout(getToken(), 10000, 'Session timed out')
       if (!token) {
         throw new Error('Missing session')
       }
@@ -93,7 +102,7 @@ export default function Checkout() {
         image: i.image,
       }))
 
-      await createOrder({
+      await withTimeout(createOrder({
         items: cartItems,
         total,
         payment_method: form.payment,
@@ -102,13 +111,15 @@ export default function Checkout() {
         city: form.city.trim(),
         customer_name: form.name.trim(),
         customer_email: form.email.trim(),
-      }, token)
+      }, token), 30000, 'Checkout timed out')
 
       clearCart()
       addToast('Order placed successfully.', 'success')
       navigate('/order-success')
     } catch (err) {
-      const message = err?.code === 'ECONNABORTED'
+      const message = err?.message === 'Session timed out'
+        ? 'Your session took too long to load. Please sign in again and retry.'
+        : err?.code === 'ECONNABORTED' || err?.message === 'Checkout timed out'
         ? 'Checkout timed out. Please try again.'
         : err?.response?.data?.detail || 'We could not place your order right now. Please try again.'
       addToast(message, 'error')
