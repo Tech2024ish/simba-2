@@ -175,6 +175,35 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Multilingual Showcase — visible proof of 3-language support */}
+      <section className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-5">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <a href="/?lang=en" className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-simba-red transition-colors no-underline">
+              <span className="text-2xl">🇬🇧</span>
+              <div>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">English</p>
+                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">Fresh Groceries, Delivered Fast</p>
+              </div>
+            </a>
+            <a href="/?lang=fr" className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-simba-red transition-colors no-underline">
+              <span className="text-2xl">🇫🇷</span>
+              <div>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Français</p>
+                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">Courses Fraîches, Livrées Rapidement</p>
+              </div>
+            </a>
+            <a href="/?lang=rw" className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-800 hover:border-simba-red transition-colors no-underline">
+              <span className="text-2xl">🇷🇼</span>
+              <div>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Kinyarwanda</p>
+                <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">Ibiribwa Bishya, Bitanzwa Vuba</p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Market Rep Demo Banner */}
       <section className="bg-simba-navy/5 dark:bg-gray-800/50 border-y border-simba-navy/10 dark:border-gray-700">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">

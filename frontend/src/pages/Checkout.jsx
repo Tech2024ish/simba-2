@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Smartphone, Banknote, CreditCard, ChevronRight, Lock } from 'lucide-react'
+import { Smartphone, Banknote, CreditCard, ChevronRight, Lock, CheckCircle } from 'lucide-react'
 import { useCart } from '../context/CartContext.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useLang } from '../context/LangContext.jsx'
@@ -237,7 +237,17 @@ export default function Checkout() {
                       <div className="flex-1">
                         <p className="font-semibold text-sm text-gray-800 dark:text-gray-200">{t(labelKey)}</p>
                         {id === 'momo' && form.payment === 'momo' && (
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t('momo_hint')}</p>
+                          <>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{t('momo_hint')}</p>
+                            <div className="mt-3 space-y-1.5">
+                              {[t('momo_step1'), t('momo_step2'), t('momo_step3')].map((step, i) => (
+                                <div key={i} className="flex items-start gap-2">
+                                  <CheckCircle className="w-3.5 h-3.5 text-yellow-600 shrink-0 mt-0.5" />
+                                  <p className="text-xs text-gray-500 dark:text-gray-400">{step}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </>
                         )}
                       </div>
                       {form.payment === id && (

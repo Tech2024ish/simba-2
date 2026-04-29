@@ -74,9 +74,20 @@ export default function Dashboard() {
     setLoading(true)
     try {
       const [s, o] = await Promise.all([getDashboardStats(token), getOrders(token)])
-      if (o.length === 0) {
-        setStats({ ...DEMO_STATS, product_count: s.product_count || DEMO_STATS.product_count })
-        setOrders(DEMO_ORDERS)
+      const noRealStats = !s.top_products?.length && !s.top_categories?.length
+      if (o.length === 0 || noRealStats) {
+        const mergedStats = {
+          ...DEMO_STATS,
+          total_orders: o.length > 0 ? s.total_orders : DEMO_STATS.total_orders,
+          pending_orders: o.length > 0 ? s.pending_orders : DEMO_STATS.pending_orders,
+          approved_orders: o.length > 0 ? s.approved_orders : DEMO_STATS.approved_orders,
+          total_revenue: o.length > 0 ? s.total_revenue : DEMO_STATS.total_revenue,
+          product_count: s.product_count || DEMO_STATS.product_count,
+          top_products: s.top_products?.length ? s.top_products : DEMO_STATS.top_products,
+          top_categories: s.top_categories?.length ? s.top_categories : DEMO_STATS.top_categories,
+        }
+        setStats(mergedStats)
+        setOrders(o.length > 0 ? o : DEMO_ORDERS)
         setUsingDemo(true)
       } else {
         setStats(s)
