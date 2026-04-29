@@ -155,19 +155,19 @@ export default function Home() {
       {/* Trust badges */}
       <section className="bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               { icon: Truck, textKey: 'trust_fast', subKey: 'trust_fast_sub' },
               { icon: Shield, textKey: 'trust_secure', subKey: 'trust_secure_sub' },
               { icon: Clock, textKey: 'trust_returns', subKey: 'trust_returns_sub' },
             ].map(({ icon: Icon, textKey, subKey }) => (
-              <div key={textKey} className="flex flex-col sm:flex-row items-center gap-3 text-center sm:text-left">
+              <div key={textKey} className="flex flex-row items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-simba-red/10 flex items-center justify-center shrink-0">
                   <Icon className="w-5 h-5 text-simba-red" />
                 </div>
                 <div>
                   <p className="font-bold text-sm text-gray-800 dark:text-gray-200">{t(textKey)}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{t(subKey)}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{t(subKey)}</p>
                 </div>
               </div>
             ))}
@@ -288,7 +288,7 @@ export default function Home() {
                 <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">{t('about_mission_desc')}</p>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
               {[
                 { value: '10+', label: t('our_branches') },
                 { value: '552', label: t('dash_products') },

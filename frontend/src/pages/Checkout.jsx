@@ -23,7 +23,7 @@ function withTimeout(promise, ms, message) {
 }
 
 export default function Checkout() {
-  const { items, total, clearCart } = useCart()
+  const { items, clearCart } = useCart()
   const { user, profile, getToken } = useAuth()
   const { t } = useLang()
   const navigate = useNavigate()
@@ -140,7 +140,11 @@ export default function Checkout() {
 
       clearCart()
       addToast(t('checkout_success'), 'success')
-      navigate('/order-success')
+      if (form.payment === 'momo') {
+        navigate('/momo-payment', { state: { phone: form.phone.trim(), total: normalizedTotal } })
+      } else {
+        navigate('/order-success')
+      }
     } catch (err) {
       const message = err?.message === 'Session timed out'
         ? t('checkout_session_error')

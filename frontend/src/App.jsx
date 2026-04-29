@@ -1,5 +1,4 @@
 import { Routes, Route } from 'react-router-dom'
-import { useEffect } from 'react'
 import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
@@ -11,6 +10,7 @@ import ProductDetail from './pages/ProductDetail.jsx'
 import Cart from './pages/Cart.jsx'
 import Checkout from './pages/Checkout.jsx'
 import OrderSuccess from './pages/OrderSuccess.jsx'
+import MomoPayment from './pages/MomoPayment.jsx'
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import Dashboard from './pages/Dashboard.jsx'
@@ -46,6 +46,7 @@ export default function App() {
             </ProtectedRoute>
           } />
           <Route path="/order-success" element={<OrderSuccess />} />
+          <Route path="/momo-payment" element={<MomoPayment />} />
           <Route path="/my-orders" element={<ProtectedRoute><MyOrders /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/about" element={<About />} />

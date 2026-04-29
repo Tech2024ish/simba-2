@@ -218,6 +218,71 @@ export default function Dashboard() {
             }
           </div>
 
+          {/* ── PRODUCT STATISTICS (overview only) ── */}
+          {tab === 'overview' && stats && (
+            <div className="grid xl:grid-cols-2 gap-6 mb-8">
+              {/* Top selling products */}
+              <section className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-5">
+                <h2 className="font-heading font-bold text-lg text-gray-900 dark:text-white mb-4">{t('dash_top_products')}</h2>
+                {(!stats.top_products || stats.top_products.length === 0) ? (
+                  <p className="text-sm text-gray-400 text-center py-8">{t('dash_no_sales')}</p>
+                ) : (
+                  <div className="space-y-3">
+                    {(() => {
+                      const maxQty = Math.max(...stats.top_products.map(p => p.qty), 1)
+                      return stats.top_products.map((p, i) => (
+                        <div key={p.name}>
+                          <div className="flex items-center justify-between text-sm mb-1">
+                            <span className="font-medium text-gray-800 dark:text-gray-200 truncate max-w-[60%]">
+                              <span className="text-simba-red font-bold mr-2">#{i + 1}</span>{p.name}
+                            </span>
+                            <span className="text-gray-500 dark:text-gray-400 shrink-0 ml-2">{p.qty} {t('dash_units_sold')}</span>
+                          </div>
+                          <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div
+                              className="h-full bg-simba-red rounded-full transition-all duration-700"
+                              style={{ width: `${Math.round((p.qty / maxQty) * 100)}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-gray-400 mt-0.5 text-right">RWF {p.revenue.toLocaleString()}</p>
+                        </div>
+                      ))
+                    })()}
+                  </div>
+                )}
+              </section>
+
+              {/* Revenue by category */}
+              <section className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-5">
+                <h2 className="font-heading font-bold text-lg text-gray-900 dark:text-white mb-4">{t('dash_top_categories')}</h2>
+                {(!stats.top_categories || stats.top_categories.length === 0) ? (
+                  <p className="text-sm text-gray-400 text-center py-8">{t('dash_no_sales')}</p>
+                ) : (
+                  <div className="space-y-3">
+                    {(() => {
+                      const maxRev = Math.max(...stats.top_categories.map(c => c.revenue), 1)
+                      const colors = ['bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500', 'bg-orange-500']
+                      return stats.top_categories.map((c, i) => (
+                        <div key={c.category}>
+                          <div className="flex items-center justify-between text-sm mb-1">
+                            <span className="font-medium text-gray-800 dark:text-gray-200 truncate max-w-[60%]">{c.category}</span>
+                            <span className="font-bold text-gray-700 dark:text-gray-300 shrink-0 ml-2">RWF {c.revenue.toLocaleString()}</span>
+                          </div>
+                          <div className="h-2.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full ${colors[i % colors.length]} rounded-full transition-all duration-700`}
+                              style={{ width: `${Math.round((c.revenue / maxRev) * 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                      ))
+                    })()}
+                  </div>
+                )}
+              </section>
+            </div>
+          )}
+
           {(tab === 'overview' || tab === 'orders') && (
             <div className="grid xl:grid-cols-[1.1fr,1.4fr] gap-6 mb-8">
               <section className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-5">
