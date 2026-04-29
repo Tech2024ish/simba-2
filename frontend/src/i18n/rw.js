@@ -137,6 +137,7 @@ export default {
   success_next_3: "Ibitangwa bizakugeraho i Kigali",
   review_sign_in_prompt: "Injira kugira ngo usige igitekerezo",
   account_label: "Konti",
+  added_to_cart: "yashyirijwe mu agashya!",
   dash_overview: "Incamake",
   dash_top_products: "Ibicuruzwa Biragurwa Cyane",
   dash_top_categories: "Amafaranga Avuye mu Byiciro",

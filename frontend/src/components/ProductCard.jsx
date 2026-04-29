@@ -81,7 +81,7 @@ export default function ProductCard({ product }) {
   const handleAddToCart = (e) => {
     e.stopPropagation()
     addItem(product)
-    addToast(`${product.name} added to cart!`, 'success')
+    addToast(`${product.name} ${t('added_to_cart')}`, 'success')
   }
 
   return (

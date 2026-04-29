@@ -134,6 +134,7 @@ export default {
   success_next_3: "Delivery to your address in Kigali",
   review_sign_in_prompt: "Sign in to leave a review",
   account_label: "Account",
+  added_to_cart: "added to cart!",
   dash_overview: "Overview",
   dash_top_products: "Top Selling Products",
   dash_top_categories: "Revenue by Category",

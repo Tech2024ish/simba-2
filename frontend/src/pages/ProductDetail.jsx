@@ -39,7 +39,7 @@ export default function ProductDetail() {
 
   const handleAddToCart = () => {
     addItem(product, qty)
-    addToast(`${product.name} added to cart!`, 'success')
+    addToast(`${product.name} ${t('added_to_cart')}`, 'success')
   }
 
   if (loading) {

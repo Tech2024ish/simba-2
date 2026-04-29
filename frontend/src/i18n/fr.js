@@ -136,6 +136,7 @@
   success_next_3: "Livraison à votre adresse à Kigali",
   review_sign_in_prompt: "Connectez-vous pour laisser un avis",
   account_label: "Compte",
+  added_to_cart: "ajouté au panier !",
   dash_overview: "Aperçu",
   dash_top_products: "Produits les Plus Vendus",
   dash_top_categories: "Revenus par Catégorie",

@@ -7,6 +7,31 @@ import { getDashboardStats } from '../api/dashboard.js'
 import { getOrders, updateOrder } from '../api/orders.js'
 import { getProducts, createProduct, updateProduct, deleteProduct } from '../api/products.js'
 
+const DEMO_ORDERS = [
+  { id: 'demo-ord-001-aaa', customer_name: 'Jean Mugisha', customer_email: 'jean@example.com', total: 12500, status: 'pending', payment_method: 'momo', address: 'KG 123 St, Kicukiro', city: 'Kigali', created_at: new Date().toISOString(), items: [{ name: 'Milk 1L', qty: 2, price: 1500 }, { name: 'Bread 400g', qty: 3, price: 2000 }, { name: 'Eggs (tray)', qty: 1, price: 4000 }] },
+  { id: 'demo-ord-002-bbb', customer_name: 'Amina Uwase', customer_email: 'amina@example.com', total: 8900, status: 'approved', payment_method: 'cash', address: 'KN 5 Rd', city: 'Kigali', created_at: new Date(Date.now() - 86400000).toISOString(), items: [{ name: 'Rice 5kg', qty: 1, price: 8900 }] },
+  { id: 'demo-ord-003-ccc', customer_name: 'Pierre Habimana', customer_email: 'pierre@example.com', total: 15600, status: 'delivered', payment_method: 'momo', address: 'KK 35 Ave', city: 'Kigali', created_at: new Date(Date.now() - 172800000).toISOString(), items: [{ name: 'Cooking Oil 2L', qty: 2, price: 5600 }, { name: 'Sugar 1kg', qty: 2, price: 2200 }] },
+  { id: 'demo-ord-004-ddd', customer_name: 'Claudine Mukamana', customer_email: 'claudine@example.com', total: 6800, status: 'rejected', payment_method: 'card', address: 'Remera', city: 'Kigali', created_at: new Date(Date.now() - 259200000).toISOString(), items: [{ name: 'Yogurt 500ml', qty: 4, price: 1700 }] },
+]
+const DEMO_STATS = {
+  total_orders: 156, pending_orders: 12, approved_orders: 98, total_revenue: 2847600, product_count: 552,
+  top_products: [
+    { name: 'Rice 5kg', qty: 45, revenue: 400500 },
+    { name: 'Cooking Oil 2L', qty: 38, revenue: 212800 },
+    { name: 'Milk 1L', qty: 62, revenue: 93000 },
+    { name: 'Sugar 1kg', qty: 31, revenue: 68200 },
+    { name: 'Bread 400g', qty: 28, revenue: 56000 },
+    { name: 'Eggs (tray)', qty: 20, revenue: 80000 },
+  ],
+  top_categories: [
+    { category: 'Food Products', revenue: 1420000 },
+    { category: 'Alcoholic Drinks', revenue: 680000 },
+    { category: 'Cosmetics & Personal Care', revenue: 380000 },
+    { category: 'Cleaning & Sanitary', revenue: 210000 },
+    { category: 'Kitchen Storage', revenue: 157600 },
+  ],
+}
+
 const STATUS_CONFIG = {
   pending:   { label: 'status_pending',   class: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400', icon: Clock },
   approved:  { label: 'status_approved',  class: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',   icon: CheckCircle },
@@ -41,14 +66,23 @@ export default function Dashboard() {
   const [deletingId, setDeletingId]       = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(null)
 
+  const [usingDemo, setUsingDemo] = useState(false)
+
   const loadData = useCallback(async () => {
     const token = await getToken()
     if (!token) return
     setLoading(true)
     try {
       const [s, o] = await Promise.all([getDashboardStats(token), getOrders(token)])
-      setStats(s)
-      setOrders(o)
+      if (o.length === 0) {
+        setStats({ ...DEMO_STATS, product_count: s.product_count || DEMO_STATS.product_count })
+        setOrders(DEMO_ORDERS)
+        setUsingDemo(true)
+      } else {
+        setStats(s)
+        setOrders(o)
+        setUsingDemo(false)
+      }
     } catch {
       addToast(t('error_load'), 'error')
     } finally {
@@ -187,7 +221,14 @@ export default function Dashboard() {
         <div className="flex-1 lg:ml-64 p-4 sm:p-6">
           {/* Header */}
           <div className="flex items-center justify-between mb-6">
-            <h1 className="font-heading font-bold text-2xl text-gray-900 dark:text-white">{t('dash_title')}</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="font-heading font-bold text-2xl text-gray-900 dark:text-white">{t('dash_title')}</h1>
+              {usingDemo && (
+                <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs font-bold">
+                  Sample Data
+                </span>
+              )}
+            </div>
             <button onClick={loadData} disabled={loading} className="flex items-center gap-2 text-sm text-gray-500 hover:text-simba-red transition-colors disabled:opacity-50">
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> {t('refresh')}
             </button>
@@ -635,7 +676,7 @@ export default function Dashboard() {
             </div>
             <h3 className="font-heading font-bold text-lg text-gray-900 dark:text-white mb-2">{t('delete_product_title')}</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
-              "<span className="font-medium text-gray-700 dark:text-gray-300">{confirmDelete.name}</span>" will be permanently removed.
+              "<span className="font-medium text-gray-700 dark:text-gray-300">{confirmDelete.name}</span>" {t('delete_confirm_msg')}
             </p>
             <div className="flex gap-3">
               <button onClick={() => setConfirmDelete(null)}

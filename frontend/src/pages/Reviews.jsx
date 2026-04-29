@@ -23,7 +23,7 @@ export default function Reviews() {
       const data = await getReviews()
       setReviews(data || [])
     } catch {
-      addToast('We could not load reviews right now.', 'error')
+      addToast(t('review_load_error'), 'error')
     } finally {
       setLoading(false)
     }

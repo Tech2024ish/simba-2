@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ArrowRight, Truck, Shield, Clock, Star, MapPin, ChevronDown, Send, Phone, Mail, MessageSquare } from 'lucide-react'
+import { ArrowRight, Truck, Shield, Clock, Star, MapPin, ChevronDown, Send, Phone, Mail, MessageSquare, LayoutDashboard } from 'lucide-react'
 
 import { useLang } from '../context/LangContext.jsx'
 import { supabase } from '../context/AuthContext.jsx'
@@ -171,6 +171,29 @@ export default function Home() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Market Rep Demo Banner */}
+      <section className="bg-simba-navy/5 dark:bg-gray-800/50 border-y border-simba-navy/10 dark:border-gray-700">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-simba-navy flex items-center justify-center shrink-0">
+                <LayoutDashboard className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <p className="font-bold text-sm text-gray-900 dark:text-white">{t('demo_title')}: {t('demo_rep_label')}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">admin@test.com &nbsp;/&nbsp; admin123</p>
+              </div>
+            </div>
+            <Link
+              to="/admin"
+              className="shrink-0 flex items-center gap-2 bg-simba-navy text-white text-sm font-semibold px-4 py-2 rounded-full hover:bg-blue-900 transition-colors"
+            >
+              <LayoutDashboard className="w-4 h-4" /> {t('nav_dashboard')} <ArrowRight className="w-4 h-4" />
+            </Link>
           </div>
         </div>
       </section>
