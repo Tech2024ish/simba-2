@@ -92,8 +92,8 @@ export default function ProductDetail() {
               <span className="bg-simba-navy/10 dark:bg-simba-navy/30 text-simba-navy dark:text-blue-300 text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1">
                 <Tag className="w-3 h-3" /> {product.category}
               </span>
-              <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold px-3 py-1 rounded-full">
-                {t('in_stock')}
+              <span className={`text-xs font-bold px-3 py-1 rounded-full ${product.in_stock !== false ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
+                {product.in_stock !== false ? t('in_stock') : t('out_stock')}
               </span>
             </div>
 

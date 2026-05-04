@@ -1,8 +1,11 @@
+import { useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar.jsx'
 import Footer from './components/Footer.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import AiAssistant from './components/AiAssistant.jsx'
+import { useToast } from './components/Toast.jsx'
+import client from './api/client.js'
 
 import Home from './pages/Home.jsx'
 import Shop from './pages/Shop.jsx'
@@ -19,6 +22,7 @@ import Contact from './pages/Contact.jsx'
 import Reviews from './pages/Reviews.jsx'
 import MyOrders from './pages/MyOrders.jsx'
 import Profile from './pages/Profile.jsx'
+import NotFound from './pages/NotFound.jsx'
 
 function initDarkMode() {
   const saved = localStorage.getItem('simba_dark')
@@ -30,9 +34,29 @@ function initDarkMode() {
 
 initDarkMode()
 
+function BackendWakeup() {
+  const { addToast, removeToast } = useToast()
+  useEffect(() => {
+    let toastId = null
+    const timer = setTimeout(() => {
+      toastId = addToast('Backend is warming up — first load may take ~30s', 'info', 0)
+    }, 3000)
+    client.get('/').then(() => {
+      clearTimeout(timer)
+      if (toastId) removeToast(toastId)
+    }).catch(() => {
+      clearTimeout(timer)
+      if (toastId) removeToast(toastId)
+    })
+    return () => clearTimeout(timer)
+  }, [addToast, removeToast])
+  return null
+}
+
 export default function App() {
   return (
     <div className="flex flex-col min-h-screen">
+      <BackendWakeup />
       <Navbar />
       <main className="flex-1">
         <Routes>
@@ -54,6 +78,7 @@ export default function App() {
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="*" element={<NotFound />} />
           <Route path="/admin" element={
             <ProtectedRoute requireAdmin={true}>
               <Dashboard />

@@ -104,7 +104,7 @@ export default function Dashboard() {
   const loadProducts = useCallback(async () => {
     setProdLoading(true)
     try {
-      const data = await getProducts({ limit: 50 })
+      const data = await getProducts({ limit: 200 })
       setProducts(data.products)
     } catch {
       addToast(t('error_load'), 'error')
