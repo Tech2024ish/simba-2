@@ -14,7 +14,7 @@ const DEMO_ORDERS = [
   { id: 'demo-ord-004-ddd', customer_name: 'Claudine Mukamana', customer_email: 'claudine@example.com', total: 6800, status: 'rejected', payment_method: 'card', address: 'Remera', city: 'Kigali', created_at: new Date(Date.now() - 259200000).toISOString(), items: [{ name: 'Yogurt 500ml', qty: 4, price: 1700 }] },
 ]
 const DEMO_STATS = {
-  total_orders: 156, pending_orders: 12, approved_orders: 98, total_revenue: 2847600, product_count: 552,
+  total_orders: 156, pending_orders: 12, approved_orders: 98, delivered_orders: 38, total_revenue: 2847600, product_count: 552,
   top_products: [
     { name: 'Rice 5kg', qty: 45, revenue: 400500 },
     { name: 'Cooking Oil 2L', qty: 38, revenue: 212800 },
@@ -196,9 +196,10 @@ export default function Dashboard() {
     .slice(0, 3)
 
   const STAT_CARDS = stats ? [
-    { icon: ShoppingBag, label: t('dash_orders'),   value: stats.total_orders,                       color: 'bg-simba-navy',  iconColor: 'text-blue-300' },
-    { icon: Clock,       label: t('dash_pending'),  value: stats.pending_orders,                     color: 'bg-yellow-500',  iconColor: 'text-yellow-200' },
-    { icon: CheckCircle, label: t('dash_approved'), value: stats.approved_orders,                    color: 'bg-green-600',   iconColor: 'text-green-200' },
+    { icon: ShoppingBag, label: t('dash_orders'),   value: stats.total_orders,                            color: 'bg-simba-navy',  iconColor: 'text-blue-300' },
+    { icon: Clock,       label: t('dash_pending'),  value: stats.pending_orders,                          color: 'bg-yellow-500',  iconColor: 'text-yellow-200' },
+    { icon: CheckCircle, label: t('dash_approved'), value: stats.approved_orders,                         color: 'bg-green-600',   iconColor: 'text-green-200' },
+    { icon: Truck,       label: t('status_delivered'), value: stats.delivered_orders ?? orders.filter(o => o.status === 'delivered').length, color: 'bg-blue-600', iconColor: 'text-blue-200' },
     { icon: TrendingUp,  label: t('dash_revenue'),  value: `RWF ${stats.total_revenue?.toLocaleString()}`, color: 'bg-simba-red', iconColor: 'text-red-200' },
   ] : []
 
@@ -236,7 +237,7 @@ export default function Dashboard() {
               <h1 className="font-heading font-bold text-2xl text-gray-900 dark:text-white">{t('dash_title')}</h1>
               {usingDemo && (
                 <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-xs font-bold">
-                  Sample Data
+                  {t('sample_data')}
                 </span>
               )}
             </div>
@@ -256,7 +257,7 @@ export default function Dashboard() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
             {loading ? Array.from({length:4}).map((_,i) => <div key={i} className="skeleton h-24 rounded-2xl" />) :
               STAT_CARDS.map(({ icon: Icon, label, value, color, iconColor }) => (
                 <div key={label} className={`${color} rounded-2xl p-5 text-white`}>

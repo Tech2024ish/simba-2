@@ -110,7 +110,7 @@ export default function ProductDetail() {
               <p className="text-4xl font-bold text-simba-red font-heading">
                 RWF {product.price.toLocaleString()}
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">per {product.unit}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{t('per_unit')} {product.unit}</p>
             </div>
 
             <div className="flex items-center gap-4">

@@ -1,8 +1,20 @@
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShoppingCart, Package } from 'lucide-react'
+import { ShoppingCart, Package, Heart, Star } from 'lucide-react'
 import { useCart } from '../context/CartContext.jsx'
 import { useToast } from './Toast.jsx'
 import { useLang } from '../context/LangContext.jsx'
+
+const getWishlist = () => {
+  try { return JSON.parse(localStorage.getItem('simba_wishlist') || '[]') } catch { return [] }
+}
+const setWishlist = (ids) => localStorage.setItem('simba_wishlist', JSON.stringify(ids))
+
+const getProductRating = (id) => {
+  const seed = ((id * 17 + 13) % 10) / 10
+  return (4.0 + seed).toFixed(1)
+}
+const getRatingCount = (id) => 5 + (id % 47)
 
 const CATEGORY_ICONS = {
   "Alcoholic Drinks": "🍷",
@@ -77,12 +89,28 @@ export default function ProductCard({ product }) {
   const { addItem } = useCart()
   const { addToast } = useToast()
   const { t } = useLang()
+  const [wishlisted, setWishlisted] = useState(() => getWishlist().includes(product.id))
+
+  useEffect(() => {
+    setWishlisted(getWishlist().includes(product.id))
+  }, [product.id])
 
   const handleAddToCart = (e) => {
     e.stopPropagation()
     addItem(product)
     addToast(`${product.name} ${t('added_to_cart')}`, 'success')
   }
+
+  const handleWishlist = (e) => {
+    e.stopPropagation()
+    const current = getWishlist()
+    const updated = wishlisted ? current.filter(id => id !== product.id) : [...current, product.id]
+    setWishlist(updated)
+    setWishlisted(!wishlisted)
+  }
+
+  const rating = getProductRating(product.id)
+  const ratingCount = getRatingCount(product.id)
 
   return (
     <div
@@ -105,20 +133,33 @@ export default function ProductCard({ product }) {
             {CATEGORY_ICONS[product.category] || '🛒'} {product.category}
           </span>
         </div>
-        <div className="absolute top-2 right-2">
-          <span className="bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-            {t('in_stock')}
-          </span>
-        </div>
+        <button
+          onClick={handleWishlist}
+          className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center shadow transition-all duration-200 ${wishlisted ? 'bg-simba-red text-white scale-110' : 'bg-white/90 dark:bg-gray-800/90 text-gray-400 hover:text-simba-red'}`}
+          title={wishlisted ? t('remove_wishlist') : t('add_wishlist')}
+        >
+          <Heart className={`w-4 h-4 ${wishlisted ? 'fill-white' : ''}`} />
+        </button>
       </div>
 
       <div className="p-4">
-        <h3 className="font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 text-sm leading-tight mb-2 font-heading">
+        <h3 className="font-semibold text-gray-900 dark:text-gray-100 line-clamp-2 text-sm leading-tight mb-1.5 font-heading">
           {product.name}
         </h3>
+        <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-0.5">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star key={i} className={`w-3 h-3 ${i < Math.round(rating) ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200 dark:text-gray-700'}`} />
+            ))}
+          </div>
+          <span className="text-xs text-gray-500 dark:text-gray-400">{rating} ({ratingCount})</span>
+        </div>
         <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-3">
           <Package className="w-3 h-3" />
           <span>{product.unit}</span>
+          <span className="ml-auto bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold px-1.5 py-0.5 rounded-full">
+            {t('in_stock')}
+          </span>
         </div>
         <div className="flex items-center justify-between gap-2">
           <p className="font-bold text-simba-red text-lg">
