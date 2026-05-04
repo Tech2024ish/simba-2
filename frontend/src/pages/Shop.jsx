@@ -24,14 +24,17 @@ export default function Shop() {
   const [pages, setPages] = useState(0)
   const [loading, setLoading] = useState(true)
   const [searchInput, setSearchInput] = useState(searchParams.get('search') || '')
-  const [priceMin, setPriceMin] = useState('')
-  const [priceMax, setPriceMax] = useState('')
+  const [priceMinInput, setPriceMinInput] = useState(searchParams.get('price_min') || '')
+  const [priceMaxInput, setPriceMaxInput] = useState(searchParams.get('price_max') || '')
   const searchTimeout = useRef(null)
+  const priceTimeout = useRef(null)
 
   const category = searchParams.get('category') || ''
   const search = searchParams.get('search') || ''
   const page = parseInt(searchParams.get('page') || '1')
   const sort = searchParams.get('sort') || ''
+  const priceMin = searchParams.get('price_min') || ''
+  const priceMax = searchParams.get('price_max') || ''
 
   const updateParams = useCallback((updates) => {
     setSearchParams((prev) => {
@@ -40,7 +43,8 @@ export default function Shop() {
         if (v) next.set(k, v)
         else next.delete(k)
       })
-      if ('category' in updates || 'search' in updates || 'sort' in updates) {
+      if ('category' in updates || 'search' in updates || 'sort' in updates ||
+          'price_min' in updates || 'price_max' in updates) {
         next.delete('page')
       }
       return next
@@ -49,14 +53,14 @@ export default function Shop() {
 
   useEffect(() => {
     setLoading(true)
-    getProducts({ category, search, page, sort, limit: LIMIT })
+    getProducts({ category, search, page, sort, limit: LIMIT, price_min: priceMin || undefined, price_max: priceMax || undefined })
       .then((data) => {
         setProducts(data.products)
         setTotal(data.total)
         setPages(data.pages)
       })
       .finally(() => setLoading(false))
-  }, [category, search, page, sort])
+  }, [category, search, page, sort, priceMin, priceMax])
 
   useEffect(() => {
     getCategories().then(setCategories)
@@ -64,10 +68,15 @@ export default function Shop() {
 
   useEffect(() => {
     setSearchInput(searchParams.get('search') || '')
+    setPriceMinInput(searchParams.get('price_min') || '')
+    setPriceMaxInput(searchParams.get('price_max') || '')
   }, [searchParams])
 
   useEffect(() => {
-    return () => clearTimeout(searchTimeout.current)
+    return () => {
+      clearTimeout(searchTimeout.current)
+      clearTimeout(priceTimeout.current)
+    }
   }, [])
 
   const handleSearchChange = (e) => {
@@ -77,6 +86,30 @@ export default function Shop() {
     searchTimeout.current = setTimeout(() => {
       updateParams({ search: val })
     }, 400)
+  }
+
+  const handlePriceMinChange = (e) => {
+    const val = e.target.value
+    setPriceMinInput(val)
+    clearTimeout(priceTimeout.current)
+    priceTimeout.current = setTimeout(() => {
+      updateParams({ price_min: val })
+    }, 600)
+  }
+
+  const handlePriceMaxChange = (e) => {
+    const val = e.target.value
+    setPriceMaxInput(val)
+    clearTimeout(priceTimeout.current)
+    priceTimeout.current = setTimeout(() => {
+      updateParams({ price_max: val })
+    }, 600)
+  }
+
+  const clearPriceFilter = () => {
+    setPriceMinInput('')
+    setPriceMaxInput('')
+    updateParams({ price_min: '', price_max: '' })
   }
 
   const start = total === 0 ? 0 : (page - 1) * LIMIT + 1
@@ -120,22 +153,22 @@ export default function Shop() {
                   <input
                     type="number"
                     min="0"
-                    value={priceMin}
-                    onChange={e => setPriceMin(e.target.value)}
+                    value={priceMinInput}
+                    onChange={handlePriceMinChange}
                     placeholder={t('price_min')}
                     className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm focus:border-simba-red focus:outline-none text-gray-800 dark:text-gray-200"
                   />
                   <input
                     type="number"
                     min="0"
-                    value={priceMax}
-                    onChange={e => setPriceMax(e.target.value)}
+                    value={priceMaxInput}
+                    onChange={handlePriceMaxChange}
                     placeholder={t('price_max')}
                     className="w-full px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 text-sm focus:border-simba-red focus:outline-none text-gray-800 dark:text-gray-200"
                   />
                   <div className="flex gap-2">
                     <button
-                      onClick={() => { setPriceMin(''); setPriceMax('') }}
+                      onClick={clearPriceFilter}
                       className="flex-1 py-1.5 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-semibold text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                     >
                       {t('clear_filter')}
@@ -211,11 +244,7 @@ export default function Shop() {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {Array.from({ length: 8 }).map((_, i) => <SkeletonCard key={i} />)}
               </div>
-            ) : products.filter(p => {
-              if (priceMin && p.price < Number(priceMin)) return false
-              if (priceMax && p.price > Number(priceMax)) return false
-              return true
-            }).length === 0 ? (
+            ) : products.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-center">
                 <Search className="w-16 h-16 mb-4 text-gray-300 dark:text-gray-700" />
                 <h3 className="font-heading font-bold text-xl text-gray-800 dark:text-gray-200 mb-2">{t('no_results')}</h3>
@@ -226,13 +255,7 @@ export default function Shop() {
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                {products
-                  .filter(p => {
-                    if (priceMin && p.price < Number(priceMin)) return false
-                    if (priceMax && p.price > Number(priceMax)) return false
-                    return true
-                  })
-                  .map((p) => <ProductCard key={p.id} product={p} />)}
+                {products.map((p) => <ProductCard key={p.id} product={p} />)}
               </div>
             )}
 

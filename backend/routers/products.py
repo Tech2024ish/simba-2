@@ -37,13 +37,19 @@ def list_products(
     search: str = None,
     page: int = 1,
     limit: int = 20,
-    sort: str = None
+    sort: str = None,
+    price_min: Optional[float] = None,
+    price_max: Optional[float] = None,
 ):
     query = sb.table("products").select("*", count="exact")
     if category:
         query = query.eq("category", category)
     if search:
         query = query.ilike("name", f"%{search}%")
+    if price_min is not None:
+        query = query.gte("price", price_min)
+    if price_max is not None:
+        query = query.lte("price", price_max)
     if sort == "price_asc":
         query = query.order("price", desc=False)
     elif sort == "price_desc":
