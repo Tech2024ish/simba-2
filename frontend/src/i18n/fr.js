@@ -181,5 +181,9 @@
   clear_filter: "Effacer",
   avg_rating: "Note Moy.",
   ratings_count: "avis",
+  not_found_title: "Page introuvable",
+  not_found_sub: "La page que vous recherchez n'existe pas ou a été déplacée.",
+  go_home: "Accueil",
+  backend_warming: "Le serveur démarre — le premier chargement peut prendre ~30s",
 }
 

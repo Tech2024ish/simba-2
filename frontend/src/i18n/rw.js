@@ -182,4 +182,8 @@ export default {
   clear_filter: "Siba",
   avg_rating: "Amanota Rusange",
   ratings_count: "amanota",
+  not_found_title: "Urupapuro ntirubonetse",
+  not_found_sub: "Urupapuro ushaka ntiruriho cyangwa rwimurwa.",
+  go_home: "Ahabanza",
+  backend_warming: "Seriveri irategura — ubuzatinze bwa mbere bushobora gufata ~30s",
 }

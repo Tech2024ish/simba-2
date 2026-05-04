@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { CheckCircle, ArrowRight, Package } from 'lucide-react'
+import { CheckCircle, ArrowRight, Package, ShoppingBag } from 'lucide-react'
 import { useLang } from '../context/LangContext.jsx'
 
 export default function OrderSuccess() {
@@ -37,11 +37,11 @@ export default function OrderSuccess() {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
-          <Link to="/shop" className="btn-primary flex items-center justify-center gap-2">
-            {t('back_shop')} <ArrowRight className="w-5 h-5" />
+          <Link to="/my-orders" className="btn-primary flex items-center justify-center gap-2">
+            <ShoppingBag className="w-5 h-5" /> {t('my_orders_title')}
           </Link>
-          <Link to="/" className="btn-outline flex items-center justify-center gap-2">
-            {t('nav_home')}
+          <Link to="/shop" className="btn-outline flex items-center justify-center gap-2">
+            {t('back_shop')} <ArrowRight className="w-5 h-5" />
           </Link>
         </div>
       </div>

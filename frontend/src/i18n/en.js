@@ -179,4 +179,8 @@ export default {
   clear_filter: "Clear",
   avg_rating: "Avg. Rating",
   ratings_count: "ratings",
+  not_found_title: "Page not found",
+  not_found_sub: "The page you're looking for doesn't exist or has been moved.",
+  go_home: "Go Home",
+  backend_warming: "Backend is warming up — first load may take ~30s",
 }

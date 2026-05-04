@@ -5,6 +5,7 @@ import Footer from './components/Footer.jsx'
 import ProtectedRoute from './components/ProtectedRoute.jsx'
 import AiAssistant from './components/AiAssistant.jsx'
 import { useToast } from './components/Toast.jsx'
+import { useLang } from './context/LangContext.jsx'
 import client from './api/client.js'
 
 import Home from './pages/Home.jsx'
@@ -36,10 +37,11 @@ initDarkMode()
 
 function BackendWakeup() {
   const { addToast, removeToast } = useToast()
+  const { t } = useLang()
   useEffect(() => {
     let toastId = null
     const timer = setTimeout(() => {
-      toastId = addToast('Backend is warming up — first load may take ~30s', 'info', 0)
+      toastId = addToast(t('backend_warming'), 'info', 0)
     }, 3000)
     client.get('/').then(() => {
       clearTimeout(timer)
@@ -78,12 +80,12 @@ export default function App() {
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="*" element={<NotFound />} />
           <Route path="/admin" element={
             <ProtectedRoute requireAdmin={true}>
               <Dashboard />
             </ProtectedRoute>
           } />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </main>
       <Footer />
