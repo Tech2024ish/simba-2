@@ -112,10 +112,12 @@ export default function ProductCard({ product }) {
   const rating = getProductRating(product.id)
   const ratingCount = getRatingCount(product.id)
 
+  const inStock = product.in_stock !== false
+
   return (
     <div
       onClick={() => navigate(`/product/${product.id}`)}
-      className="card overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group"
+      className={`card overflow-hidden cursor-pointer transition-all duration-300 group ${inStock ? 'hover:-translate-y-1 hover:shadow-xl' : 'opacity-70'}`}
     >
       <div className="relative aspect-square overflow-hidden bg-gray-50 dark:bg-gray-900">
         <img
@@ -157,8 +159,8 @@ export default function ProductCard({ product }) {
         <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 mb-3">
           <Package className="w-3 h-3" />
           <span>{product.unit}</span>
-          <span className="ml-auto bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-bold px-1.5 py-0.5 rounded-full">
-            {t('in_stock')}
+          <span className={`ml-auto text-xs font-bold px-1.5 py-0.5 rounded-full ${inStock ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
+            {inStock ? t('in_stock') : t('out_stock')}
           </span>
         </div>
         <div className="flex items-center justify-between gap-2">
@@ -168,10 +170,11 @@ export default function ProductCard({ product }) {
         </div>
         <button
           onClick={handleAddToCart}
-          className="mt-3 w-full flex items-center justify-center gap-2 bg-simba-red text-white rounded-full py-2.5 text-sm font-semibold hover:bg-red-700 hover:scale-105 active:scale-95 transition-all duration-200"
+          disabled={!inStock}
+          className="mt-3 w-full flex items-center justify-center gap-2 bg-simba-red text-white rounded-full py-2.5 text-sm font-semibold hover:bg-red-700 hover:scale-105 active:scale-95 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-simba-red"
         >
           <ShoppingCart className="w-4 h-4" />
-          {t('add_cart')}
+          {inStock ? t('add_cart') : t('out_stock')}
         </button>
       </div>
     </div>

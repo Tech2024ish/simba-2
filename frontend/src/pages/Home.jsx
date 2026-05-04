@@ -342,9 +342,9 @@ export default function Home() {
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
               {[
-                { value: '10+', label: t('our_branches') },
-                { value: '552', label: t('dash_products') },
-                { value: '1989', label: t('hero_stat3').replace('Kigali, ','') + ' est.' },
+                { value: '10+',  label: t('our_branches') },
+                { value: '789',  label: t('dash_products') },
+                { value: '1989', label: 'Est. Rwanda' },
                 { value: '24/7', label: t('trust_returns_sub') },
               ].map(stat => (
                 <div key={stat.label} className="bg-gray-50 dark:bg-gray-800 rounded-2xl p-6 text-center">
