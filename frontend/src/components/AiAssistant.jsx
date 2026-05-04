@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { X, Send, Bot, User, Loader2 } from 'lucide-react'
 import { useLang } from '../context/LangContext.jsx'
+import client from '../api/client.js'
 
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY
 const GROQ_URL = 'https://api.groq.com/openai/v1/chat/completions'
@@ -73,23 +74,24 @@ export default function AiAssistant() {
     setLoading(true)
 
     try {
-      const res = await fetch(GROQ_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${GROQ_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: MODEL,
-          messages: [
-            { role: 'system', content: SYSTEM_PROMPT },
-            ...history.slice(-8),
-          ],
-          temperature: 0.7,
-          max_tokens: 200,
-        }),
-      })
-      const data = await res.json()
+      const payload = {
+        messages: [
+          { role: 'system', content: SYSTEM_PROMPT },
+          ...history.slice(-8),
+        ],
+      }
+      let data
+      try {
+        const resp = await client.post('/api/ai/chat', payload, { timeout: 15000 })
+        data = resp.data
+      } catch {
+        const res = await fetch(GROQ_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${GROQ_API_KEY}` },
+          body: JSON.stringify({ model: MODEL, ...payload, temperature: 0.7, max_tokens: 200 }),
+        })
+        data = await res.json()
+      }
       const reply = data.choices?.[0]?.message?.content || '...'
       setMessages(prev => [...prev, { role: 'assistant', content: reply }])
     } catch {

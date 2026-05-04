@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const DEFAULT_REMOTE_API_URL = 'https://simba-backend.onrender.com'
+const DEFAULT_REMOTE_API_URL = 'https://simba-2.onrender.com'
 
 function resolveApiUrl() {
   const configured = (import.meta.env.VITE_API_URL || '').trim()
