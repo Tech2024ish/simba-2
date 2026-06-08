@@ -25,7 +25,13 @@ async def chat(body: ChatRequest):
         resp = await client.post(
             GROQ_URL,
             headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-            json={"model": GROQ_MODEL, "messages": [m.dict() for m in body.messages], "temperature": 0.7, "max_tokens": 200},
+            json={
+                "model": GROQ_MODEL,
+                "messages": [m.dict() for m in body.messages],
+                "temperature": 0.7,
+                "max_tokens": 350,
+                "response_format": {"type": "json_object"},
+            },
         )
         resp.raise_for_status()
         return resp.json()

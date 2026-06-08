@@ -17,7 +17,7 @@ export default function ProtectedRoute({ children, requireAdmin = false }) {
     return <Navigate to={`/login?next=${encodeURIComponent(location.pathname)}`} replace />
   }
 
-  if (requireAdmin && profile?.role !== 'market_rep') {
+  if (requireAdmin && profile?.role !== 'admin' && profile?.role !== 'branch_manager') {
     return <Navigate to="/shop" replace />
   }
 

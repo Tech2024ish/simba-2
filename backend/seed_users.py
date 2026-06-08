@@ -14,6 +14,7 @@ TEST_USERS = [
         "password": "password123",
         "full_name": "Test Buyer",
         "role": "buyer",
+        "branch": None,
         "phone": "+250700000001",
         "address": "KN 343 St",
         "city": "Kigali",
@@ -22,9 +23,20 @@ TEST_USERS = [
         "email": "admin@test.com",
         "password": "admin123",
         "full_name": "Admin User",
-        "role": "market_rep",
+        "role": "admin",
+        "branch": None,
         "phone": "+250700000002",
         "address": "KN 5 Rd",
+        "city": "Kigali",
+    },
+    {
+        "email": "manager@test.com",
+        "password": "manager123",
+        "full_name": "Branch Manager",
+        "role": "branch_manager",
+        "branch": "Kimironko",
+        "phone": "+250700000003",
+        "address": "342F+3V5, Kimironko",
         "city": "Kigali",
     },
 ]
@@ -38,11 +50,12 @@ def find_user_by_email(email: str):
     return None
 
 
-def sync_profile(user_id: str, full_name: str, role: str, phone: str, address: str, city: str):
+def sync_profile(user_id: str, full_name: str, role: str, branch, phone: str, address: str, city: str):
     sb.table("profiles").upsert({
         "id": user_id,
         "full_name": full_name,
         "role": role,
+        "branch": branch,
         "phone": phone,
         "address": address,
         "city": city,
@@ -56,6 +69,7 @@ for test_user in TEST_USERS:
         "user_metadata": {
             "full_name": test_user["full_name"],
             "role": test_user["role"],
+            "branch": test_user["branch"],
             "phone": test_user["phone"],
             "address": test_user["address"],
             "city": test_user["city"],
@@ -78,6 +92,7 @@ for test_user in TEST_USERS:
             user_id,
             test_user["full_name"],
             test_user["role"],
+            test_user["branch"],
             test_user["phone"],
             test_user["address"],
             test_user["city"],

@@ -16,7 +16,8 @@ create table if not exists products (
 create table if not exists profiles (
   id uuid references auth.users primary key,
   full_name text,
-  role text default 'buyer' check (role in ('buyer', 'market_rep')),
+  role text default 'buyer' check (role in ('buyer', 'admin', 'branch_manager')),
+  branch text,
   phone text,
   address text,
   city text,
@@ -36,6 +37,7 @@ create table if not exists orders (
   phone text,
   address text,
   city text,
+  branch text,
   created_at timestamptz default now()
 );
 
@@ -50,23 +52,35 @@ create policy "Users read own profile" on profiles for select using (auth.uid() 
 create policy "Users update own profile" on profiles for update using (auth.uid() = id);
 create policy "Users insert own profile" on profiles for insert with check (auth.uid() = id);
 
-create policy "Buyers see own orders" on orders for select
-  using (auth.uid() = user_id or exists (
-    select 1 from profiles where id = auth.uid() and role = 'market_rep'
-  ));
+create policy "Staff and owners see relevant orders" on orders for select
+  using (
+    auth.uid() = user_id
+    or exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+    or exists (
+      select 1 from profiles p
+      where p.id = auth.uid() and p.role = 'branch_manager' and p.branch = orders.branch
+    )
+  );
 create policy "Buyers insert orders" on orders for insert with check (auth.uid() = user_id);
-create policy "Market reps update orders" on orders for update
-  using (exists (select 1 from profiles where id = auth.uid() and role = 'market_rep'));
+create policy "Staff update relevant orders" on orders for update
+  using (
+    exists (select 1 from profiles where id = auth.uid() and role = 'admin')
+    or exists (
+      select 1 from profiles p
+      where p.id = auth.uid() and p.role = 'branch_manager' and p.branch = orders.branch
+    )
+  );
 
 -- Trigger: auto-create profile on signup
 create or replace function public.handle_new_user()
 returns trigger as $$
 begin
-  insert into public.profiles (id, full_name, role, phone, address, city)
+  insert into public.profiles (id, full_name, role, branch, phone, address, city)
   values (
     new.id,
     coalesce(new.raw_user_meta_data->>'full_name', ''),
     coalesce(new.raw_user_meta_data->>'role', 'buyer'),
+    new.raw_user_meta_data->>'branch',
     coalesce(new.raw_user_meta_data->>'phone', ''),
     coalesce(new.raw_user_meta_data->>'address', ''),
     coalesce(new.raw_user_meta_data->>'city', 'Kigali')

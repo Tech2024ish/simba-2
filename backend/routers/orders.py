@@ -48,6 +48,7 @@ class OrderCreate(BaseModel):
     phone: str = Field(min_length=1)
     address: str = Field(min_length=1)
     city: str = Field(min_length=1)
+    branch: Optional[str] = None
     customer_name: str = Field(min_length=1)
     customer_email: EmailStr
 
@@ -55,6 +56,9 @@ class OrderCreate(BaseModel):
 def create_order(order: OrderCreate, authorization: Optional[str] = Header(default=None)):
     token = get_bearer_token(authorization)
     user = get_user(token)
+    profile = sb.table("profiles").select("role").eq("id", user.id).single().execute()
+    if profile.data and profile.data.get("role") == "admin":
+        raise HTTPException(status_code=403, detail="Admins manage the store and cannot place orders")
     if not order.items:
         raise HTTPException(status_code=400, detail="Order must include at least one item")
     if order.payment_method not in VALID_PAYMENT_METHODS:
@@ -76,6 +80,7 @@ def create_order(order: OrderCreate, authorization: Optional[str] = Header(defau
             "phone": order.phone.strip(),
             "address": order.address.strip(),
             "city": order.city.strip(),
+            "branch": order.branch.strip() if order.branch else None,
             "status": "pending"
         }).execute()
     except Exception as exc:
@@ -89,9 +94,12 @@ def create_order(order: OrderCreate, authorization: Optional[str] = Header(defau
 def list_orders(authorization: Optional[str] = Header(default=None)):
     token = get_bearer_token(authorization)
     user = get_user(token)
-    profile = sb.table("profiles").select("role").eq("id", user.id).single().execute()
-    if profile.data["role"] == "market_rep":
+    profile = sb.table("profiles").select("role, branch").eq("id", user.id).single().execute()
+    role = profile.data.get("role")
+    if role == "admin":
         result = sb.table("orders").select("*").order("created_at", desc=True).execute()
+    elif role == "branch_manager":
+        result = sb.table("orders").select("*").eq("branch", profile.data.get("branch")).order("created_at", desc=True).execute()
     else:
         result = sb.table("orders").select("*").eq("user_id", user.id).order("created_at", desc=True).execute()
     return result.data
@@ -100,8 +108,15 @@ def list_orders(authorization: Optional[str] = Header(default=None)):
 def update_order(order_id: str, body: dict, authorization: Optional[str] = Header(default=None)):
     token = get_bearer_token(authorization)
     user = get_user(token)
-    profile = sb.table("profiles").select("role").eq("id", user.id).single().execute()
-    if profile.data["role"] != "market_rep":
-        raise HTTPException(status_code=403, detail="Market reps only")
-    result = sb.table("orders").update({"status": body["status"]}).eq("id", order_id).execute()
+    profile = sb.table("profiles").select("role, branch").eq("id", user.id).single().execute()
+    role = profile.data.get("role")
+    if role not in ("admin", "branch_manager"):
+        raise HTTPException(status_code=403, detail="Staff only")
+
+    query = sb.table("orders").update({"status": body["status"]}).eq("id", order_id)
+    if role == "branch_manager":
+        query = query.eq("branch", profile.data.get("branch"))
+    result = query.execute()
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Order not found or not in your branch")
     return result.data[0]

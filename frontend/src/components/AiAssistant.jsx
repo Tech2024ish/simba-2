@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
-import { X, Send, Bot, User, Loader2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { X, Send, Bot, User, Loader2, ShoppingCart, Check } from 'lucide-react'
 import { useLang } from '../context/LangContext.jsx'
+import { useCart } from '../context/CartContext.jsx'
+import { getProducts } from '../api/products.js'
 import client from '../api/client.js'
 
 const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY
@@ -21,10 +24,19 @@ YOUR ROLE:
 - Help customers find products by describing what they need
 - Answer questions about branches, hours, delivery, payments
 - Suggest products based on customer needs
-- Guide users through the shopping process
+- Guide users through the shopping process, including adding items to their cart when asked
 - Be warm, helpful, and concise (2-3 sentences max per reply)
 
-LANGUAGE: Always respond in the SAME language the user writes in. If they write in Kinyarwanda, respond in Kinyarwanda. If French, respond in French. If English, respond in English.`
+LANGUAGE: Always respond in the SAME language the user writes in. If they write in Kinyarwanda, respond in Kinyarwanda. If French, respond in French. If English, respond in English.
+
+RESPONSE FORMAT — VERY IMPORTANT:
+Reply with ONLY a single valid JSON object — no markdown, no code fences, no extra text — in exactly this shape:
+{"action": "search" | "add_to_cart" | "chat", "query": string or null, "qty": number, "reply": string}
+
+- "search": the user wants to find or browse products (e.g. "do you have milk?", "show me snacks", "I'm looking for soap"). Set "query" to the core product keyword in English (e.g. "milk").
+- "add_to_cart": the user explicitly wants you to add an item to their cart (e.g. "add milk to my cart", "buy 2 bottles of water", "put 3 bread in my basket"). Set "query" to the product keyword in English and "qty" to the requested quantity (default 1 if not stated).
+- "chat": anything else — greetings, questions about branches, hours, delivery, payments, or general conversation. Set "query" to null and "qty" to 1.
+- "reply": your short, warm reply (2-3 sentences max), written IN THE SAME LANGUAGE the user wrote in.`
 
 const WELCOME = {
   en: "Muraho! 👋 I'm Simba AI. How can I help you shop today?",
@@ -44,8 +56,15 @@ const TITLE = {
   rw: "Umufasha wa Simba AI",
 }
 
+const NOT_FOUND = {
+  en: (q) => `Sorry, I couldn't find "${q}" in our catalog right now.`,
+  fr: (q) => `Désolé, je n'ai pas trouvé "${q}" dans notre catalogue pour le moment.`,
+  rw: (q) => `Mbabarira, sinabashije kubona "${q}" mu bicuruzwa byacu ubu.`,
+}
+
 export default function AiAssistant() {
-  const { lang } = useLang()
+  const { lang, t } = useLang()
+  const { addItem } = useCart()
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState([
     { role: 'assistant', content: WELCOME[lang] || WELCOME.en }
@@ -88,12 +107,40 @@ export default function AiAssistant() {
         const res = await fetch(GROQ_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${GROQ_API_KEY}` },
-          body: JSON.stringify({ model: MODEL, ...payload, temperature: 0.7, max_tokens: 200 }),
+          body: JSON.stringify({ model: MODEL, ...payload, temperature: 0.7, max_tokens: 350, response_format: { type: 'json_object' } }),
         })
         data = await res.json()
       }
-      const reply = data.choices?.[0]?.message?.content || '...'
-      setMessages(prev => [...prev, { role: 'assistant', content: reply }])
+      const raw = data.choices?.[0]?.message?.content || ''
+      let parsed = null
+      try {
+        const jsonStr = raw.slice(raw.indexOf('{'), raw.lastIndexOf('}') + 1)
+        parsed = JSON.parse(jsonStr)
+      } catch {
+        parsed = null
+      }
+
+      if (!parsed || !parsed.action || parsed.action === 'chat' || !parsed.query) {
+        setMessages(prev => [...prev, { role: 'assistant', content: parsed?.reply || raw || '...' }])
+      } else if (parsed.action === 'search') {
+        const { products: found } = await getProducts({ search: parsed.query, limit: 4 })
+        setMessages(prev => [...prev, {
+          role: 'assistant',
+          content: found.length ? parsed.reply : (NOT_FOUND[lang] || NOT_FOUND.en)(parsed.query),
+          products: found,
+        }])
+      } else if (parsed.action === 'add_to_cart') {
+        const { products: found } = await getProducts({ search: parsed.query, limit: 1 })
+        const product = found[0]
+        if (product) {
+          addItem(product, Math.max(1, parsed.qty || 1))
+          setMessages(prev => [...prev, { role: 'assistant', content: parsed.reply, addedProduct: product, addedQty: Math.max(1, parsed.qty || 1) }])
+        } else {
+          setMessages(prev => [...prev, { role: 'assistant', content: (NOT_FOUND[lang] || NOT_FOUND.en)(parsed.query) }])
+        }
+      } else {
+        setMessages(prev => [...prev, { role: 'assistant', content: parsed.reply || raw }])
+      }
     } catch {
       setMessages(prev => [...prev, { role: 'assistant', content: '⚠️ Sorry, I couldn\'t connect. Please try again.' }])
     } finally {
@@ -154,12 +201,49 @@ export default function AiAssistant() {
                     : <User className="w-4 h-4 text-gray-600 dark:text-gray-300" />
                   }
                 </div>
-                <div className={`max-w-[75%] px-3 py-2 rounded-2xl text-sm leading-relaxed ${
+                <div className={`max-w-[75%] space-y-2 px-3 py-2 rounded-2xl text-sm leading-relaxed ${
                   msg.role === 'assistant'
                     ? 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-tl-sm'
                     : 'bg-simba-red text-white rounded-tr-sm'
                 }`}>
-                  {msg.content}
+                  <p>{msg.content}</p>
+
+                  {msg.products?.length > 0 && (
+                    <div className="space-y-1.5 pt-1">
+                      {msg.products.map(p => (
+                        <div key={p.id} className="flex items-center gap-2 bg-white dark:bg-gray-900 rounded-xl p-2 border border-gray-200 dark:border-gray-700">
+                          <img src={p.image} alt={p.name} className="w-9 h-9 rounded-lg object-cover shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-xs text-gray-800 dark:text-gray-200 truncate">{p.name}</p>
+                            <p className="text-xs text-simba-red font-bold">RWF {p.price?.toLocaleString()}</p>
+                          </div>
+                          <button
+                            onClick={() => addItem(p, 1)}
+                            title={t('add_cart')}
+                            className="shrink-0 w-7 h-7 rounded-full bg-simba-red text-white flex items-center justify-center hover:bg-red-700 transition-colors"
+                          >
+                            <ShoppingCart className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {msg.addedProduct && (
+                    <Link
+                      to="/cart"
+                      className="flex items-center gap-2 bg-white dark:bg-gray-900 rounded-xl p-2 border border-green-200 dark:border-green-800 no-underline hover:border-green-400 transition-colors"
+                    >
+                      <div className="w-7 h-7 rounded-full bg-green-100 dark:bg-green-900/40 flex items-center justify-center shrink-0">
+                        <Check className="w-4 h-4 text-green-600" />
+                      </div>
+                      <img src={msg.addedProduct.image} alt={msg.addedProduct.name} className="w-9 h-9 rounded-lg object-cover shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-xs text-gray-800 dark:text-gray-200 truncate">{msg.addedProduct.name} × {msg.addedQty}</p>
+                        <p className="text-xs text-simba-red font-bold">{t('nav_cart')} →</p>
+                      </div>
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}

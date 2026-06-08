@@ -1,19 +1,36 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from 'react'
+import { useAuth } from './AuthContext.jsx'
 
 const CartContext = createContext(null)
 
+const GUEST_KEY = 'simba_cart_guest'
+const keyFor = (userId) => (userId ? `simba_cart_${userId}` : GUEST_KEY)
+
+const loadCart = (userId) => {
+  try {
+    return JSON.parse(localStorage.getItem(keyFor(userId)) || '[]')
+  } catch {
+    return []
+  }
+}
+
 export function CartProvider({ children }) {
-  const [items, setItems] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('simba_cart') || '[]')
-    } catch {
-      return []
-    }
-  })
+  const { user } = useAuth()
+  const userId = user?.id || null
+  const [items, setItems] = useState(() => loadCart(userId))
   const [cartBounce, setCartBounce] = useState(false)
+  const activeUserId = useRef(userId)
+
+  // Reload the right cart whenever the logged-in user changes (login/logout/switch account)
+  useEffect(() => {
+    if (activeUserId.current !== userId) {
+      activeUserId.current = userId
+      setItems(loadCart(userId))
+    }
+  }, [userId])
 
   useEffect(() => {
-    localStorage.setItem('simba_cart', JSON.stringify(items))
+    localStorage.setItem(keyFor(activeUserId.current), JSON.stringify(items))
   }, [items])
 
   const addItem = useCallback((product, qty = 1) => {

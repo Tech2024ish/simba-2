@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { useLang } from '../context/LangContext.jsx'
 import { createOrder } from '../api/orders.js'
 import { useToast } from '../components/Toast.jsx'
+import { BRANCHES } from '../constants/branches.js'
 
 const PAYMENT_METHODS = [
   { id: 'momo', icon: Smartphone, labelKey: 'payment_momo', color: 'text-yellow-600' },
@@ -36,6 +37,7 @@ export default function Checkout() {
     phone: profile?.phone || '',
     address: profile?.address || '',
     city: profile?.city || 'Kigali',
+    branch: BRANCHES[0].name,
     payment: 'momo',
   })
   const [submitting, setSubmitting] = useState(false)
@@ -134,6 +136,7 @@ export default function Checkout() {
         phone: form.phone.trim(),
         address: form.address.trim(),
         city: form.city.trim(),
+        branch: form.branch,
         customer_name: form.name.trim(),
         customer_email: form.email.trim(),
       }, token), 30000, 'Checkout timed out')
@@ -216,6 +219,14 @@ export default function Checkout() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('form_address')} *</label>
                     <input type="text" value={form.address} onChange={set('address')} className={inputClass('address')} placeholder="KG 123 St, Kicukiro" />
                     {errors.address && <p className="text-simba-red text-xs mt-1">{errors.address}</p>}
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">{t('form_branch')} *</label>
+                    <select value={form.branch} onChange={set('branch')} className={inputClass('branch')}>
+                      {BRANCHES.map(b => (
+                        <option key={b.name} value={b.name}>{b.name} — {b.address}</option>
+                      ))}
+                    </select>
                   </div>
                 </div>
               </div>

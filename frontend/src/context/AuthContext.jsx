@@ -125,10 +125,24 @@ export function AuthProvider({ children }) {
     return nextSession?.access_token || null
   }, [fetchProfile, session?.access_token])
 
-  const isMarketRep = profile?.role === 'market_rep'
+  const loginWithGoogle = useCallback(async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    })
+    if (error) throw error
+    return data
+  }, [])
+
+  const isAdmin = profile?.role === 'admin'
+  const isBranchManager = profile?.role === 'branch_manager'
+  const isStaff = isAdmin || isBranchManager
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, login, register, logout, getToken, isMarketRep }}>
+    <AuthContext.Provider value={{
+      user, profile, loading, login, register, logout, getToken, loginWithGoogle,
+      isAdmin, isBranchManager, isStaff,
+    }}>
       {children}
     </AuthContext.Provider>
   )

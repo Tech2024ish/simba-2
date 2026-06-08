@@ -7,14 +7,14 @@ import os
 router = APIRouter()
 sb = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
 
-def require_market_rep(token: str):
+def require_staff(token: str):
     try:
         user = sb.auth.get_user(token).user
     except Exception:
         raise HTTPException(status_code=401, detail="Unauthorized")
     profile = sb.table("profiles").select("role").eq("id", user.id).single().execute()
-    if profile.data.get("role") != "market_rep":
-        raise HTTPException(status_code=403, detail="Market reps only")
+    if profile.data.get("role") not in ("admin", "branch_manager"):
+        raise HTTPException(status_code=403, detail="Staff only")
     return user
 
 class ProductBody(BaseModel):
@@ -83,7 +83,7 @@ def get_product(product_id: int):
 @router.post("")
 def create_product(body: ProductBody, authorization: str = Header(...)):
     token = authorization.replace("Bearer ", "")
-    require_market_rep(token)
+    require_staff(token)
     result = sb.table("products").insert({
         "id": get_next_product_id(),
         "name": body.name,
@@ -98,7 +98,7 @@ def create_product(body: ProductBody, authorization: str = Header(...)):
 @router.put("/{product_id}")
 def update_product(product_id: int, body: ProductBody, authorization: str = Header(...)):
     token = authorization.replace("Bearer ", "")
-    require_market_rep(token)
+    require_staff(token)
     result = sb.table("products").update({
         "name": body.name,
         "price": body.price,
@@ -112,6 +112,6 @@ def update_product(product_id: int, body: ProductBody, authorization: str = Head
 @router.delete("/{product_id}")
 def delete_product(product_id: int, authorization: str = Header(...)):
     token = authorization.replace("Bearer ", "")
-    require_market_rep(token)
+    require_staff(token)
     sb.table("products").delete().eq("id", product_id).execute()
     return {"ok": True}

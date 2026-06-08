@@ -6,7 +6,7 @@ import { useLang } from '../context/LangContext.jsx'
 import { useToast } from '../components/Toast.jsx'
 
 export default function Login() {
-  const { login } = useAuth()
+  const { login, loginWithGoogle } = useAuth()
   const { t } = useLang()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
@@ -14,6 +14,7 @@ export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' })
   const [showPwd, setShowPwd] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState('')
 
   const next = searchParams.get('next') || '/'
@@ -30,6 +31,17 @@ export default function Login() {
       setError(err.message || t('login_error'))
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleGoogle = async () => {
+    setGoogleLoading(true)
+    try {
+      await loginWithGoogle()
+      // Supabase redirects to the provider; nothing more to do here.
+    } catch {
+      addToast(t('google_login_error'), 'error')
+      setGoogleLoading(false)
     }
   }
 
@@ -94,6 +106,31 @@ export default function Login() {
             </button>
           </form>
 
+          <div className="flex items-center gap-3 my-5">
+            <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+            <span className="text-xs uppercase font-semibold text-gray-400">{t('or_divider')}</span>
+            <div className="h-px flex-1 bg-gray-200 dark:bg-gray-700" />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGoogle}
+            disabled={googleLoading}
+            className="w-full flex items-center justify-center gap-3 border border-gray-200 dark:border-gray-700 rounded-full py-3 font-semibold text-sm text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+          >
+            {googleLoading ? (
+              <div className="w-5 h-5 border-2 border-simba-red border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.2-2.27H12v4.51h6.47c-.29 1.48-1.14 2.73-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z" />
+                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09C3.26 21.3 7.31 24 12 24z" />
+                <path fill="#FBBC05" d="M5.27 14.29c-.25-.72-.38-1.49-.38-2.29s.14-1.57.38-2.29V6.62H1.29A11.95 11.95 0 0 0 0 12c0 1.93.46 3.76 1.29 5.38l3.98-3.09z" />
+                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.7 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z" />
+              </svg>
+            )}
+            {t('continue_with_google')}
+          </button>
+
           {/* Demo credentials — clickable to auto-fill */}
           <div className="mt-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
             <p className="text-xs font-bold text-amber-700 dark:text-amber-400 mb-2">{t('demo_title')}</p>
@@ -101,6 +138,7 @@ export default function Login() {
               {[
                 { label: t('demo_buyer_label'), email: 'buyer@test.com', password: 'password123' },
                 { label: t('demo_rep_label'), email: 'admin@test.com', password: 'admin123' },
+                { label: t('demo_manager_label'), email: 'manager@test.com', password: 'manager123' },
               ].map(demo => (
                 <button key={demo.email} type="button"
                   onClick={() => setForm({ email: demo.email, password: demo.password })}

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { CheckCircle, ArrowRight, Package, ShoppingBag } from 'lucide-react'
+import { CheckCircle, ArrowRight, Package, ShoppingBag, MessageSquare, Send } from 'lucide-react'
 import { useLang } from '../context/LangContext.jsx'
 
 export default function OrderSuccess() {
@@ -34,6 +34,17 @@ export default function OrderSuccess() {
             <li className="flex items-start gap-2"><span className="text-green-500 font-bold mt-0.5">✓</span> {t('success_next_2')}</li>
             <li className="flex items-start gap-2"><span className="text-green-500 font-bold mt-0.5">✓</span> {t('success_next_3')}</li>
           </ul>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700 text-left space-y-3">
+          <div className="flex items-center gap-2 text-simba-red font-semibold">
+            <MessageSquare className="w-5 h-5" />
+            {t('share_experience_title')}
+          </div>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{t('share_experience_msg')}</p>
+          <Link to="/reviews" className="inline-flex items-center gap-2 bg-simba-red text-white rounded-full px-5 py-2.5 font-bold text-sm hover:bg-red-700 transition-colors no-underline">
+            <Send className="w-4 h-4" /> {t('share_experience_cta')}
+          </Link>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
