@@ -8,12 +8,12 @@ export default function About() {
   return (
     <div className="page-enter min-h-screen pt-24 pb-16">
       {/* Hero */}
-      <section className="bg-gradient-to-br from-simba-navy to-blue-900 py-20 px-4">
+      <section className="bg-simba-light py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <span className="text-5xl mb-4 block">🦁</span>
           <p className="text-simba-orange font-bold uppercase tracking-widest text-sm mb-3">{t('about_sub')}</p>
-          <h1 className="font-heading font-bold text-4xl md:text-5xl text-white mb-6">{t('about_title')}</h1>
-          <p className="text-white/70 text-lg max-w-2xl mx-auto">{t('about_desc')}</p>
+          <h1 className="font-heading font-bold text-4xl md:text-5xl text-simba-navy mb-6">{t('about_title')}</h1>
+          <p className="text-gray-600 text-lg max-w-2xl mx-auto">{t('about_desc')}</p>
         </div>
       </section>
 

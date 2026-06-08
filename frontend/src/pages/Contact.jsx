@@ -76,9 +76,9 @@ export default function Contact() {
 
   return (
     <div className="page-enter min-h-screen pt-24 pb-16">
-      <section className="bg-gradient-to-br from-simba-navy to-blue-900 py-16 px-4 text-center">
-        <h1 className="font-heading font-bold text-4xl text-white mb-3">{t('contact_title')}</h1>
-        <p className="text-white/70 text-lg">{t('contact_hours')}</p>
+      <section className="bg-simba-light py-16 px-4 text-center">
+        <h1 className="font-heading font-bold text-4xl text-simba-navy mb-3">{t('contact_title')}</h1>
+        <p className="text-gray-600 text-lg">{t('contact_hours')}</p>
       </section>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14">
