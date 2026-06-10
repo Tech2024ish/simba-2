@@ -38,7 +38,7 @@ export default function Home() {
       {/* Hero */}
       <section className="relative overflow-hidden bg-simba-light pt-28 pb-16 md:pt-32 md:pb-24">
         {/* Background pattern */}
-        <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 opacity-10 max-sm:hidden">
           <div className="absolute top-10 left-10 text-9xl">🦁</div>
           <div className="absolute bottom-10 right-10 text-9xl">🛒</div>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[200px] opacity-30">🛍️</div>
@@ -257,7 +257,7 @@ export default function Home() {
         </div>
 
         {/* Embedded map */}
-        <div className="rounded-3xl overflow-hidden shadow-lg border border-gray-100 dark:border-gray-800" style={{ height: '420px' }}>
+        <div className="rounded-3xl overflow-hidden shadow-lg border border-gray-100 dark:border-gray-800 h-[280px] md:h-[420px]">
           <iframe
             key={selectedBranch.name}
             title={selectedBranch.name}
@@ -341,7 +341,7 @@ export default function Home() {
       {/* CTA Banner */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 py-14">
         <div className="bg-gradient-to-r from-simba-red to-red-700 rounded-3xl p-10 md:p-16 text-white text-center relative overflow-hidden">
-          <div className="absolute inset-0 opacity-10 text-[120px] flex items-center justify-center">🛒</div>
+          <div className="absolute inset-0 opacity-10 text-[120px] flex items-center justify-center max-sm:hidden">🛒</div>
           <div className="relative">
             <h2 className="font-heading font-bold text-3xl md:text-4xl mb-4">
               {t('cta_title')}
