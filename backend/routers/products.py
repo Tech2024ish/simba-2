@@ -46,6 +46,8 @@ def list_products(
         query = query.eq("category", category)
     if search:
         query = query.or_(f"name.ilike.%{search}%")
+        if not category:
+            query = query.order("category")
     if price_min is not None:
         query = query.gte("price", price_min)
     if price_max is not None:

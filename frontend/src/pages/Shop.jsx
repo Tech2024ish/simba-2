@@ -1,10 +1,17 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Search, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useLang } from '../context/LangContext.jsx'
 import { getProducts, getCategories } from '../api/products.js'
 import ProductCard from '../components/ProductCard.jsx'
 import SkeletonCard from '../components/SkeletonCard.jsx'
+
+const CATEGORY_ICONS = {
+  "Alcoholic Drinks": "🍷", "Baby Products": "🍼", "Cleaning & Sanitary": "🧹",
+  "Cosmetics & Personal Care": "💄", "Food Products": "🥗", "General": "🛒",
+  "Kitchen Storage": "🗄️", "Kitchenware & Electronics": "🍳", "Pet Care": "🐾",
+  "Sports & Wellness": "💪",
+}
 
 const SORT_OPTIONS = [
   { value: '', labelKey: 'sort_default' },
@@ -105,6 +112,17 @@ export default function Shop() {
       updateParams({ price_max: val })
     }, 600)
   }
+
+  const shouldGroup = search && !category
+  const groupedProducts = useMemo(() => {
+    if (!shouldGroup) return null
+    return products.reduce((acc, p) => {
+      const cat = p.category || 'Other'
+      if (!acc[cat]) acc[cat] = []
+      acc[cat].push(p)
+      return acc
+    }, {})
+  }, [products, shouldGroup])
 
   const clearPriceFilter = () => {
     setPriceMinInput('')
@@ -253,6 +271,19 @@ export default function Shop() {
                   {t('filter_all')}
                 </button>
               </div>
+            ) : shouldGroup && groupedProducts ? (
+              Object.entries(groupedProducts).map(([category, items]) => (
+                <div key={category} className="mb-8">
+                  <h3 className="font-heading font-bold text-lg mb-4 flex items-center gap-2 text-gray-800 dark:text-gray-200">
+                    <span>{CATEGORY_ICONS[category] || '🛒'}</span>
+                    {category}
+                    <span className="text-xs font-normal text-gray-400">({items.length})</span>
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {items.map((p) => <ProductCard key={p.id} product={p} />)}
+                  </div>
+                </div>
+              ))
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {products.map((p) => <ProductCard key={p.id} product={p} />)}
